@@ -1,68 +1,82 @@
 # LearningLion
-Opensource generative AI
+
+## Description of the project
+The project is a study on the use of generative AI to improve the services of SSC-ICT by supporting employees and optimizing internal processes. In particular, the focus is on generative large language models (LLM) because they can have the most significant impact on the daily work of SSC-ICT employees. The assignment (Speech Recognition & AI) has been approved by the SpB and has been running since the beginning of 2023. 
+
+## Repository
+The current repository contains a selection of project documents as well as the code to a Proof of Concept (PoC) Chatbot Demo. The demo is an example of Retrieval Augmented Generation (RAG) and allows for the use of Open-Source LLM's for CPU Inference on a local machine. It makes use of Langchain and FAISS libraries among other things to perform document Q&A. A schematic overview of how the application works is shown here: 
+
+![Alt text](project_docs/AI Demo arch.png?raw=true "Demo Architecture")
 
 
-## Project plan: AI project 9/10/2023
+## Acknowledgements
+This is a fork of Kenneth Leung's original repository, that adjusts the original code in several ways:
+- A streamlit visualisation is available to make it more user-friendly
+- Follow-up questions are now possible thanks to memory implementation
+- Different models now appear as options for the user
+- Multiple other optimalisations 
 
-### Description of the project? 
-The project is a study on the use of (generative) AI to improve the services of SSC ICT by supporting employees and optimizing internal processes. In particular, the focus is on generative large language models (LLM) because they can have the most significant impact on the daily work of SSC-ICT employees. The assignment (Speech Recognition & AI) has been approved by the SpB and has been running since the beginning of 2023. 
+___
+# Running Locally
 
-### Why now? 
-Generative AI is already being used by more than a quarter of the employees of the Dutch government. It has the potential to simplify parts of very diverse work and can save a lot of time. The flip side is that services are currently being used (ChatGPT, BingChat, Google) that save the data they are fed with, for further use. By providing paid AI services or developing services themselves, data streams can be controlled, and the use of AI remains safer. Furthermore, generative AI can be tailored to domain-specific tasks when set up by SSC-ICT itself.
+## Quickstart
+- Note: If you want to run this in an offline environment, read the following instructions first: [Using offline embeddings](#using-offline-embeddings)
 
-### Who will use it?
-The intended users of the AI applications are all employees of SSC-ICT. For each sub-study, a specific use case will be developed for the SSC-ICT service desk.
+- Ensure you have downloaded the model of your choice in GGUF format and placed it into the `models/` folder. Some examples:
+    - https://huggingface.co/TheBloke/Llama-2-7b-Chat-GGUF
+    - https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-GGUF
 
-### How?
-Several possible applications for AI are being explored. In this exploration, we will pay attention to alignment with existing projects, investigate existing AI tools, and research the possibility of developing AI services internally.
+- Fill the `data/` folder with .pdf, .doc(x) or .txt files you want to ask questions about
 
-It is important to use AI responsibly. Therefore, all applications will be assessed for ethical responsibility, privacy, and compliance with AI-related laws and regulations.
+- To build a FAISS database with information regarding your files, launch the terminal from the project directory and run the following command <br>
+`python db_build.py`
 
-### Background Information
-The innovation team conducted extensive research on machine learning and AI between 2016 and 2022. The conclusion was drawn that having its own AI implementation is technically feasible and highly desirable. Furthermore, multiple use cases for this technology were explored and identified as suitable candidates, including chatbots, documentation, and internal training material generators. In 2023, the service portfolio board asked the innovation team to conduct an AI quick scan and impact analysis, including the deployment of generative AI. This project builds upon the knowledge gained previously.
+- To start asking questions about your files, run the following command: <br>
+`streamlit run main_st.py`
 
-The Dutch government's attitude towards AI applications is somewhat ambivalent. On one hand, there is a demand, as many employees already use various (generative) AI services for their work. However, an approved offering is still scarce. This is partly due to the fact that there is division within the Dutch government on how to approach AI. Some see obstacles and would prefer to keep AI completely out of the picture. However, AI applications continue to grow, and it will be impossible to avoid participating in them in the future. It is important that the current project also addresses the impact of AI and the ethical issues it raises.
+- Choose which model to use for Q&A and adjust parameters to your liking
 
-### Sub-studies & Objectives
+![Alt text](assets/qa_output.png)
 
-1. Development of an open-source chatbot
-    1.1 Open-source Large Language Model (LLM) research 
+___
+## Using offline embeddings
+Necessary word embeddings are usually *downloaded* when running the application. This works for most use cases, but not for those where this application has to be run without any connection to the internet at all.
 
-        There are many open-source large language base models available. These models are often freely downloadable in various versions and sizes. This allows for running these models locally and experimenting with them. In the initial phase of this project, research was conducted on open-source LLMs to determine the different models available and which ones are most suitable for our purposes.
+In those cases, perform the following steps:
+1.  Download the desired embedding files from https://sbert.net/models
+    - This repo uses `all-MiniLM-L6-v2.zip`
+    - Unzip to folder: `sentence-transformers_all-MiniLM-L6-v2/`
+    - If you want to use different embeddings, you should adjust the folder name and the reference to it in `db_build.py` (line 74)
+2. Go to the `.cache/` folder on your offline machine
+    - Can be found in `C:/Users/[User]/` for most Windows machines
+3. Within this folder, create `torch/sentence_transformers/` if nonexistent
+4. Place embedding folder from step 1 inside of `/sentence_transformers/`
 
-    1.2. Low-fidelity Proof of Concept (PoC)
+If all steps were performed correctly, the application will find the embeddings locally and will not try to download the embeddings.
+___
+## Tools
+- **LangChain**: Framework for developing applications powered by language models
+- **LlamaCPP**: Python bindings for the Transformer models implemented in C/C++
+- **FAISS**: Open-source library for efficient similarity search and clustering of dense vectors.
+- **Sentence-Transformers (all-MiniLM-L6-v2)**: Open-source pre-trained transformer model for embedding text to a 384-dimensional dense vector space for tasks like clustering or semantic search.
+- **Llama-2-7B-Chat**: Open-source fine-tuned Llama 2 model designed for chat dialogue. Leverages publicly available instruction datasets and over 1 million human annotations. 
 
-        Although the team has access to 4 GPUs, it is not yet possible to effectively run models on them. Therefore, a low-fidelity proof of concept is developed initially, where a quantized version of LLAMA2 is run on a CPU. LangChain is used to provide the model with documents from the SSC-ICT self-service portal as a knowledge base. By experimenting with different parameter settings and prompts, its functionality is optimized. A rudimentary interface is also developed for asking questions.
+___
+## Files and Content
+- `/assets`: Images relevant to the project
+- `/config`: Configuration files for LLM application
+- `/data`: Dataset used for this project (i.e., Manchester United FC 2022 Annual Report - 177-page PDF document)
+- `/models`: Binary file of GGUF quantized LLM model (i.e., Llama-2-7B-Chat) 
+- `/src`: Python codes of key components of LLM application, namely `llm.py`, `utils.py`, and `prompts.py`
+- `/vectorstore`: FAISS vector store for documents
+- `db_build.py`: Python script to ingest dataset and generate FAISS vector store
+- `db_clear.py`: Python script to clear the previously built database
+- `main_st.py`: Main Python script to launch the streamlit application 
+- `main.py`: Python script to launch an older version of the application within the terminal, mainly used for testing purposes
+- `requirements.txt`: List of Python dependencies (and version)
+___
 
-
-        This phase results in a basic version of our own open-source model. It may not function optimally yet but can be used to validate the idea behind this project and gather initial feedback.
-
-    1.3. Local Chatbot
-
-        As mentioned earlier, we have access to 4 GPUs. These GPUs are also necessary to run a fully functional LLM. To do this effectively, the GPUs need to be interconnected in a cluster (see fig. 1). Once this is achieved, the models identified as the best options from 1.1 can be tested. This testing can be done in a local environment and will be tailored to the service desk use case. An expected outcome is that models may require fine-tuning before they function effectively. However, this fine-tuning process can be time-consuming and resource-intensive. Therefore, based on this evaluation, one open-source model will be selected for fine-tuning. In this phase, further development will also be carried out on the basic user interface developed in 1.2.
-
-    1.4. Fine-tuning the open-source model
-
-        In this final phase, we fine-tune the model for our specific purposes. We examine the questions frequently asked at the SSC-ICT service desk and train the model to answer them effectively. This can be done either by providing examples of correct answers or by using reinforcement learning with human feedback (RLHF), where interns from the CFI assess the quality of different responses and further optimize the model based on that feedback.
-
-2. Azure chatbot
-
-    For an easier adaptation of AI tools within our organization, we also explore possibilities that can be integrated with existing projects and infrastructure, especially within Microsoft Azure. Azure offers the ability to customize models from OpenAI (e.g., GPT-4) for our own use case. It also provides the option to run this chatbot on-premise. In this case, we can provide a knowledge base, system prompt, and few-shot examples.
-
-
-    To keep the chatbots comparable, we use the same use case as for the open-source option. The 'system prompt' is a description of what the system (the chatbot) is and what it should do. Through trial and error, we will search for a prompt that works well for our use case. Few-shot examples mean that you provide a few examples of how you want it to answer a question, which the system can then extrapolate to other questions. Again, we will use the most frequently asked questions at the SSC-ICT service desk.
-
-
-    The result is a chatbot in the Azure environment that is functionally similar to the chatbot we create based on open-source architecture. This allows us to compare both chatbots and describe the advantages and disadvantages of each approach.
-
-3. Final Report: Comparing Azure Chatbot with Open-Source Model
-    3.1. Establishing and Developing Model Evaluation Criteria
-
-        To make a meaningful comparison between an Azure Chatbot and an Open-Source model, it is crucial to first establish the criteria with which we can evaluate the performance of these chatbots. An example could be how effectively they can answer the 100 most frequently asked questions to the SSC-ICT helpdesk. It is important to understand what our stakeholders value in a chatbot. We will attempt to identify important considerations we can quantify, and attempt to measure them. The ultimate result will be presented in the form of a table that shows measurable differences between the two chatbots, such as performance, costs, or energy consumption, to the extent that we can obtain this data.
-
-    3.2. Other Differences and Considerations 
-
-        Comparing an open-source approach with an off-the-shelf product like an Azure chatbot goes beyond quantifiable differences such as performance and energy consumption. There are fundamental differences between these approaches, such as the level of dependence on external parties, flexibility, and the ability to seamlessly integrate them into other services you may use. Our final report will also address these broader aspects of the comparison.
-
-
-        The end product will consist of two chatbots and a report that compares them.
+## References
+- https://huggingface.co/TheBloke
+- https://github.com/abetlen/llama-cpp-python
+- https://python.langchain.com/docs/integrations/llms/llamacpp# Demo-CPU-Inference
