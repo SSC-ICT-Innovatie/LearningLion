@@ -6,7 +6,7 @@ The project is a study on the use of generative AI to improve the services of SS
 ## Repository
 The current repository contains a selection of project documents as well as the code to a Proof of Concept (PoC) Chatbot Demo. The demo is an example of Retrieval Augmented Generation (RAG) and allows for the use of Open-Source LLM's for CPU Inference on a local machine. It makes use of Langchain and FAISS libraries among other things to perform document Q&A. A schematic overview of how the application works is shown here: 
 
-![Alt text](project_docs/AI Demo arch.png?raw=true "Demo Architecture")
+![Alt text](project_docs/AI Demo arch.png raw=true "Demo Architecture")
 
 
 ## Acknowledgements
