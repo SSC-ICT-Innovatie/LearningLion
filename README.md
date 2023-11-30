@@ -8,19 +8,9 @@ The current repository contains a selection of project documents as well as the 
 
 ![alt text](https://github.com/SSC-ICT-Innovatie/LearningLion/blob/main/project_docs/AI%20Demo%20arch.png)
 
-
-## Acknowledgements
-This is a fork of Kenneth Leung's original repository, that adjusts the original code in several ways:
-- A streamlit visualisation is available to make it more user-friendly
-- Follow-up questions are now possible thanks to memory implementation
-- Different models now appear as options for the user
-- Multiple other optimalisations 
-
 ___
 # Running Locally
-
 ## Quickstart
-- Note: If you want to run this in an offline environment, read the following instructions first: [Using offline embeddings](#using-offline-embeddings)
 
 - Ensure you have downloaded the model of your choice in GGUF format and placed it into the `models/` folder. Some examples:
     - https://huggingface.co/TheBloke/Llama-2-7b-Chat-GGUF
@@ -28,15 +18,76 @@ ___
 
 - Fill the `data/` folder with .pdf, .doc(x) or .txt files you want to ask questions about
 
-- To build a FAISS database with information regarding your files, launch the terminal from the project directory and run the following command <br>
+- To build a vectorstore database of your files, launch the terminal from the project directory and run the following command <br>
 `python db_build.py`
 
-- To start asking questions about your files, run the following command: <br>
+- To start the application, run the following command: <br>
 `streamlit run main_st.py`
 
-- Choose which model to use for Q&A and adjust parameters to your liking
+- Use the interface to choose a model and adjust the parameters.
 
-![Alt text](assets/qa_output.png)
+- You can now start asking questions about your files
+
+![Alt text](Placeholder screenshot of app)
+___
+## Complete walkthrough (work in progress)
+### 1. Clone Repository
+- Open a terminal
+
+- Navigate to the location where you want the cloned directory to be
+
+- Input the git clone command using the LearningLion repository link in the terminal
+```
+git clone https://github.com/SSC-ICT-Innovatie/LearningLion.git
+```
+
+- Press enter to create your local clone
+
+### 2. Download your models
+- There are numerous open source models available to download on [Huggingface](https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard). When you run an LLM on a personal machine, you will probably use smaller models (max 7/13B parameters).
+
+- If you are running on a CPU, look for models in GGUF format. These models are quantized, which means the weiths of the model are converted to lower precision datatypes. This makes them less computationally heavy to run, but it also means they are less accurate and stable.
+
+- Some example of GGUF models
+    - https://huggingface.co/TheBloke/Llama-2-7b-Chat-GGUF
+    - https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-GGUF
+    - https://huggingface.co/TheBloke/Mistral-7B-OpenOrca-GGUF
+    - https://huggingface.co/TheBloke/Llama-2-13B-Chat-Dutch-GGUF
+
+- Most models have different versions. Make sure you select one that meets your system requirements.
+
+![Alt text](Placeholder screenshot of model quantization)
+
+- Download the models you want and place them in the `models/` folder.
+
+### 3. Input files for your database
+Select files to put in the 'data/' folder
+
+### 4. Install requirements
+- Create a virtual environment using conda or venv
+
+- Install the required packages and libraries to your virtual environment using the pip install command
+
+```
+pip install -r requirements.txt
+```
+
+### 4. Build your vectorstore database
+use db build command to build a vectorstore
+
+### 5. Run the application
+use streamlit to run the application
+
+### 6. Adjust your settings
+choose your model
+set your parameters (temperature, n, etc)
+
+### 7. Adding files to your database
+delete db
+create new db
+
+
+- Note: If you want to run this in an offline environment, read the following instructions first: [Using offline embeddings](#using-offline-embeddings)
 
 ___
 ## Using offline embeddings
@@ -75,6 +126,8 @@ ___
 - `main.py`: Python script to launch an older version of the application within the terminal, mainly used for testing purposes
 - `requirements.txt`: List of Python dependencies (and version)
 ___
+## Acknowledgements
+This is a fork of [Kenneth Leung's original repository](https://github.com/kennethleungty/Llama-2-Open-Source-LLM-CPU-Inference/tree/main), and also gratefully makes use of [Dennis V's](https://github.com/Vlassie/Llama-2-CPU-Inference) work. 
 
 ## References
 - https://huggingface.co/TheBloke
