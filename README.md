@@ -6,8 +6,7 @@ The project is a study on the use of generative AI to improve the services of SS
 ## Repository
 The current repository contains a selection of project documents as well as the code to a Proof of Concept (PoC) Chatbot Demo. The demo is an example of Retrieval Augmented Generation (RAG) and allows for the use of Open-Source LLM's for CPU Inference on a local machine. It makes use of Langchain and FAISS libraries among other things to perform document Q&A. A schematic overview of how the application works is shown here: 
 
-![alt text](https://github.com/SSC-ICT-Innovatie/LearningLion/blob/main/project_docs/AI%20Demo%20arch.png)
-
+![alt text](https://github.com/SSC-ICT-Innovatie/LearningLion/blob/main/project_docs/images/AI%20Demo%20arch.png)
 ___
 # Running Locally
 ## Quickstart
@@ -56,7 +55,7 @@ git clone https://github.com/SSC-ICT-Innovatie/LearningLion.git
 
 - Most models have different versions. Make sure you select one that meets your system requirements.
 
-![Alt text](Placeholder screenshot of model quantization)
+![alt text](https://github.com/SSC-ICT-Innovatie/LearningLion/blob/main/project_docs/images/model%20quantization%20screenshot.png)
 
 - Download the models you want and place them in the `models/` folder.
 
