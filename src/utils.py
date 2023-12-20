@@ -30,8 +30,9 @@ def build_retrieval_qa(llm, prompt, vectordb, n_sources, clear):
                                                  )
     return dbqa
 
+
 def setup_dbqa(prompt, model_path, length, temp, n_sources, gpu_layers, clear=False, chat_box=None):
-    embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L12-v2",
+    embeddings = HuggingFaceEmbeddings(model_name=cfg.EMBEDDINGS_MODEL_NAME,
                                        model_kwargs={'device': 'cpu'})
     vectordb = FAISS.load_local(cfg.DB_FAISS_PATH, embeddings)
     llm = build_llm(model_path, length, temp, gpu_layers, chat_box)

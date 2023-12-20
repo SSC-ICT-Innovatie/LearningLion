@@ -71,7 +71,7 @@ def run_db_build():
     texts = text_splitter.split_documents(documents)
 
     print("Loading embeddings ...")
-    embeddings = HuggingFaceEmbeddings(model_name='sentence-transformers/all-MiniLM-L6-v2',
+    embeddings = HuggingFaceEmbeddings(model_name=cfg.EMBEDDINGS_MODEL_NAME,
                                        model_kwargs={'device': 'cpu'})
 
     print("Building FAISS VectorStore from documents and embeddings ...")

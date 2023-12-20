@@ -7,3 +7,4 @@ LOG_FILE: 'log_loaded.txt'
 DB_FAISS_PATH: 'vectorstore/db_faiss'
 MAX_NEW_TOKENS: 256
 TEMPERATURE: 0.01
+EMBEDDINGS_MODEL_NAME: 'sentence-transformers/all-MiniLM-L12-v2' 
