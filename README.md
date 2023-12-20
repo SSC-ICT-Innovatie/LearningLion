@@ -73,6 +73,10 @@ git clone https://github.com/SSC-ICT-Innovatie/LearningLion.git
 pip install -r requirements.txt
 ```
 
+> [!NOTE]
+> If you want to run this in an offline environment, read the following instructions first: [Using offline embeddings](#using-offline-embeddings)
+
+
 ### 4. Build your vectorstore database
 - Run the db_build file in the terminal to build your vectorstore
 ```
@@ -116,12 +120,9 @@ streamlit run main_st.py
 - To shut down the application access the terminal and press <kbd>Ctrl</kbd> + <kbd>C</kbd>
 
 ### 9. Adding files to your database
-delete db
-create new db
+- It is possible to add files to the vector store, to do this simply add your new files to the `data/` folder and run ``python db_build.py`` again
 
-
-> [!NOTE]
-> If you want to run this in an offline environment, read the following instructions first: [Using offline embeddings](#using-offline-embeddings)
+- In case you want to remove files or some other error occurs, it will be necessary to delete your existing vectorstore by running ``python db_clear.py``, afterwards create a new vectorstore using ``python db_build.py``
 
 ___
 ## Using offline embeddings
@@ -165,4 +166,4 @@ This is a fork of [Kenneth Leung's original repository](https://github.com/kenne
 ## References
 - https://huggingface.co/TheBloke
 - https://github.com/abetlen/llama-cpp-python
-- https://python.langchain.com/docs/integrations/llms/llamacpp# Demo-CPU-Inference
+- https://python.langchain.com/docs/integrations/llms/llamacpp#Demo-CPU-Inference
