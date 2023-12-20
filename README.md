@@ -23,7 +23,7 @@ ___
 - To start the application, run the following command: <br>
 `streamlit run main_st.py`
 
-- Use the interface to choose a model and adjust the parameters.
+- Use the interface to choose a model and adjust the parameters
 
 - You can now start asking questions about your files
 
@@ -57,10 +57,10 @@ git clone https://github.com/SSC-ICT-Innovatie/LearningLion.git
 
 ![alt text](https://github.com/SSC-ICT-Innovatie/LearningLion/blob/main/project_docs/images/model%20quantization%20screenshot.png)
 
-- Download the models you want and place them in the `models/` folder.
+- Download the models you want and place them in the `models/` folder
 
 ### 3. Input files for your database
-- Choose the files you want to include in your RAG knowledge base and place them in the `data/` folder, the model will use these files to answer questions. 
+- Choose the files you want to include in your RAG knowledge base and place them in the `data/` folder, the model will use these files to answer questions
 
 - Use .pdf, .docx, or .txt files
 
@@ -74,24 +74,54 @@ pip install -r requirements.txt
 ```
 
 ### 4. Build your vectorstore database
-- Run the db_build file in the terminal to build your vectorstoreuse
+- Run the db_build file in the terminal to build your vectorstore
 ```
 python db_build.py
 ```
+- Wait for the function to finsih, this may take up to several minutes depending on the size of your `data/` folder
 
 ### 5. Run the application
-- Start the application using streamlit ... 
+- Start the application using Streamlit
+```
+streamlit run main_st.py
+```
+- The application will automatically start your browser. You can also access it in a different browser using http://localhost:8501
 
 ### 6. Adjust your settings
-choose your model
-set your parameters (temperature, n, etc)
+- Using the panel on the left side of the interface you can adjust your settings
 
-### 7. Adding files to your database
+- The first setting allows you to select a **model** from the `/models` folder
+
+- The **temperature** setting controls the 'creativity' or randomness of the model
+    - Low temperature *(0)* = deterministic, precise, focused
+    - High temperature *(1)* = diverse, creative
+
+- **max_length** sets the amount of tokens a model is allowed to use in a response
+    - A token is a chunk of text that a model reads or generates; a general introduction by [OpenAI](https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them)
+    - A model will not always use every available token but in general allowing a model to use more tokens will lead to longer responses and longer required time to generate an answer
+    - This setting is also useful when using commercial models, where you often pay per token
+ 
+- **n_sources** how many document chunks will be fed to the model to generate an answer
+    - Using more sources will also lead to more input context and a longer runtime
+
+- **prompt** in this window you can adjust the system prompt 
+
+### 8. Asking questions
+- Now you're all set to use the application
+
+- You can use the `clear history` button to clear the chat history
+    - The application has a memory function, meaning that it will use the previous questions and answers as context to answer follow-up questions
+    - This also means that with every question, the context size increases, so the runtime increases
+
+- To shut down the application access the terminal and press <kbd>Ctrl</kbd> + <kbd>C</kbd>
+
+### 9. Adding files to your database
 delete db
 create new db
 
 
-- Note: If you want to run this in an offline environment, read the following instructions first: [Using offline embeddings](#using-offline-embeddings)
+> [!NOTE]
+> If you want to run this in an offline environment, read the following instructions first: [Using offline embeddings](#using-offline-embeddings)
 
 ___
 ## Using offline embeddings
@@ -120,14 +150,13 @@ ___
 ## Files and Content
 - `/assets`: Images relevant to the project
 - `/config`: Configuration files for LLM application
-- `/data`: Dataset used for this project (i.e., Manchester United FC 2022 Annual Report - 177-page PDF document)
-- `/models`: Binary file of GGUF quantized LLM model (i.e., Llama-2-7B-Chat) 
-- `/src`: Python codes of key components of LLM application, namely `llm.py`, `utils.py`, and `prompts.py`
+- `/data`: Dataset used for this project
+- `/models`: Binary files of GGUF quantized LLM model (i.e., Llama-2-7B-Chat) 
+- `/src`: Python codes of key components of LLM application, namely `llm.py` and `utils.py`
 - `/vectorstore`: FAISS vector store for documents
 - `db_build.py`: Python script to ingest dataset and generate FAISS vector store
 - `db_clear.py`: Python script to clear the previously built database
 - `main_st.py`: Main Python script to launch the streamlit application 
-- `main.py`: Python script to launch an older version of the application within the terminal, mainly used for testing purposes
 - `requirements.txt`: List of Python dependencies (and version)
 ___
 ## Acknowledgements
