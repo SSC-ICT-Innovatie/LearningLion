@@ -53,14 +53,16 @@ git clone https://github.com/SSC-ICT-Innovatie/LearningLion.git
     - https://huggingface.co/TheBloke/Mistral-7B-OpenOrca-GGUF
     - https://huggingface.co/TheBloke/Llama-2-13B-Chat-Dutch-GGUF
 
-- Most models have different versions. Make sure you select one that meets your system requirements.
+- Most models have different versions. Make sure you select one that meets your system requirements. For example, listed here are several quantized versions of the Mistral 7B model. 
 
 ![alt text](https://github.com/SSC-ICT-Innovatie/LearningLion/blob/main/project_docs/images/model%20quantization%20screenshot.png)
 
 - Download the models you want and place them in the `models/` folder.
 
 ### 3. Input files for your database
-Select files to put in the 'data/' folder
+- Choose the files you want to include in your RAG knowledge base and place them in the `data/` folder, the model will use these files to answer questions. 
+
+- Use .pdf, .docx, or .txt files
 
 ### 4. Install requirements
 - Create a virtual environment using conda or venv
@@ -72,10 +74,13 @@ pip install -r requirements.txt
 ```
 
 ### 4. Build your vectorstore database
-use db build command to build a vectorstore
+- Run the db_build file in the terminal to build your vectorstoreuse
+```
+python db_build.py
+```
 
 ### 5. Run the application
-use streamlit to run the application
+- Start the application using streamlit ... 
 
 ### 6. Adjust your settings
 choose your model
