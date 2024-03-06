@@ -150,3 +150,6 @@ dmypy.json
 
 # Test Environment
 test.ipynb
+
+# Powershell scripts
+*.ps1
