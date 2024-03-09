@@ -5,25 +5,25 @@ from loguru import logger
 
 def select_woogle_dump_folders(path:str='./docs') -> str:
     """
-    Look for folders containing "woogle_dump" in their names and return the selected folder.
+    Look for folders containing "WoogleDumps" in their names and return the selected folder.
     """
     if not os.path.exists(path) or not os.path.isdir(path):
         logger.error(f'Path: "{path}" does not exist or is not a directory.')
         return None
     
     # Look for folders containing "woogle_dump" in their names
-    folders_with_woogle_dump = [folder for folder in os.listdir(path) if os.path.isdir(os.path.join(path, folder)) and "woogle_dump" in folder]
+    folders_with_woogle_dumps = [folder for folder in os.listdir(path) if os.path.isdir(os.path.join(path, folder)) and "WoogleDumps" in folder]
 
-    print("Folders containing 'woogle_dump':")
-    for idx, folder in enumerate(folders_with_woogle_dump, start=1):
+    print("Folders containing 'WoogleDumps':")
+    for idx, folder in enumerate(folders_with_woogle_dumps, start=1):
         print(f"{idx}. {folder}")
 
-    if not folders_with_woogle_dump:
-        logger.error("No folders containing 'woogle_dump' were found.")
+    if not folders_with_woogle_dumps:
+        logger.error("No folders containing 'WoogleDumps' were found.")
         return None
     
     selection = int(input("Select a folder by number: ")) - 1
-    return f"{path}/{folders_with_woogle_dump[selection]}"
+    return f"{path}/{folders_with_woogle_dumps[selection]}"
 
 def read_docs(path:str) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """"
@@ -58,9 +58,10 @@ def save_docs(df:pd.DataFrame, filename:str) -> None:
     else:
         logger.warning(f"Skipping file as it already exists at location: {filename}")
 
-def truncate_docs(length:int=10) -> None:
+def truncate_merge_docs(length:int=10) -> None:
     """
     Truncates the bodytext, dossier and document dataframes to the given length and saves them in a new directory.
+    Also merges the dataframes and saves the result in the new directory.
     """
     path = select_woogle_dump_folders()
     if path is None:
@@ -68,6 +69,11 @@ def truncate_docs(length:int=10) -> None:
         return
 
     bodytext_dataframe, dossier_dataframe, document_dataframe = read_docs(path)
+    
+    nr_dossiers, _ = dossier_dataframe.shape
+    if length > nr_dossiers:
+        logger.error(f"Length is larger than the number of dossiers in the dataset. Exiting...")
+        return None
 
     # Define the new directory based on path and length
     new_directory = f"{path}_{length}"
@@ -87,7 +93,25 @@ def truncate_docs(length:int=10) -> None:
     bodytext = bodytext_dataframe[bodytext_dataframe.index.isin(documents.index)]
     save_docs(bodytext, f'{new_directory}/woo_bodytext.csv.gz')
     
+    # Write document with all the data joined
+    # Prefix headers, so you know which columns come from which dataframe
+    prefix_bodytext = 'bodytext_'
+    exclude_bodytext = 'foi_documentId'
+    bodytext.columns = [prefix_bodytext + col if col != exclude_bodytext else col for col in bodytext.columns]
+
+    prefix_documents = 'documents_'
+    exclude_documents = 'foi_dossierId'
+    documents.columns = [prefix_documents + col if col != exclude_documents else col for col in documents.columns]
+
+    prefix_dossiers = 'dossiers_'
+    dossier_dataframe.columns = [prefix_dossiers + col for col in dossier_dataframe.columns]
+
+    joined_bodytext_documents = bodytext.join(documents).reset_index()
+    result = pd.merge(joined_bodytext_documents, dossier_dataframe, left_on='foi_dossierId', right_on='dc_identifier')
+    result.set_index('foi_documentId', inplace=True)
+    save_docs(result, f'{new_directory}/woo_merged.csv.gz')
+    
     logger.info(f"Truncated data successfully saved to {new_directory}.")
 
 if __name__ == "__main__":
-    truncate_docs()
+    truncate_merge_docs()
