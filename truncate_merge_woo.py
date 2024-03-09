@@ -94,6 +94,12 @@ def truncate_merge_docs(length:int=10) -> None:
     save_docs(bodytext, f'{new_directory}/woo_bodytext.csv.gz')
     
     # Write document with all the data joined
+    # Create primary key for bodytext
+
+    bodytext.reset_index(inplace=True)
+    bodytext.index = bodytext['foi_documentId'] + ".pagina." + bodytext['foi_pageNumber'].astype(str)
+    bodytext.index.name = 'id'
+    
     # Prefix headers, so you know which columns come from which dataframe
     prefix_bodytext = 'bodytext_'
     exclude_bodytext = 'foi_documentId'
@@ -104,11 +110,11 @@ def truncate_merge_docs(length:int=10) -> None:
     documents.columns = [prefix_documents + col if col != exclude_documents else col for col in documents.columns]
 
     prefix_dossiers = 'dossiers_'
-    dossier_dataframe.columns = [prefix_dossiers + col for col in dossier_dataframe.columns]
+    dossiers.columns = [prefix_dossiers + col for col in dossiers.columns]
 
-    joined_bodytext_documents = bodytext.join(documents).reset_index()
-    result = pd.merge(joined_bodytext_documents, dossier_dataframe, left_on='foi_dossierId', right_on='dc_identifier')
-    result.set_index('foi_documentId', inplace=True)
+    joined_bodytext_documents = bodytext.join(documents, on='foi_documentId')
+    result = joined_bodytext_documents.join(dossiers, on='foi_dossierId')
+    
     save_docs(result, f'{new_directory}/woo_merged.csv.gz')
     
     logger.info(f"Truncated data successfully saved to {new_directory}.")
