@@ -133,13 +133,20 @@ def handle_query(my_querier, my_prompt: str):
     st.session_state['messages'].append({"role": "assistant", "content": response["answer"]})
     if len(response["source_documents"]) > 0:
         with st.expander("Paragraphs used for answer"):
-            cnt = 0
-            for document in response["source_documents"]:
-                st.markdown(f'''**page: {document.metadata['page_number']},
-                            chunk: {document.metadata['chunk']},
-                            score: {scores[cnt]:.4f},
-                            file: {document.metadata['filename']}**''')
-                cnt += 1
+            for index, document in enumerate(response["source_documents"]):
+                if index != 0:
+                    st.markdown("---")
+                if settings.DATA_TYPE == "woo":
+                    source_link = f', source: [link]({document.metadata["documents_dc_source"]})' if document.metadata.get("documents_dc_source") else ""
+                    st.markdown(f'''**id: {document.metadata['id']},
+                                chunk: {document.metadata['chunk']},
+                                score: {scores[index]:.4f},
+                                dossiers_dc_title: {document.metadata['dossiers_dc_title']}{source_link}**  ''')
+                else:
+                    st.markdown(f'''**page: {document.metadata['page_number']},
+                                chunk: {document.metadata['chunk']},
+                                score: {scores[index]:.4f},
+                                file: {document.metadata['filename']}**''')
                 st.markdown(f"{document.page_content}")
     else:
         logger.info("No source documents found relating to the question")

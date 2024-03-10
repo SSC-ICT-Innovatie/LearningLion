@@ -7,6 +7,9 @@ APP_INFO = "./info/explanation.txt"
 # header in Streamlit UI, e.g. "ChatNMDC: chat with your documents"
 APP_HEADER = "ChatNMDC: chat with your documents"
 
+# must be "woo", if working with the Woo dataset. Otherwise it will use the default ingester.
+DATA_TYPE = ""
+
 # relative filepath of folder with input documents, e.g. "./docs"
 DOC_DIR = "./docs"
 
