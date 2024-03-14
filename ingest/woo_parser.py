@@ -9,6 +9,9 @@ class WooParser:
     
     def convert_nat_to_nan(self, obj: Dict[str, any]) -> None:
         for key, value in obj.items():
+            # Skip the value if it is a list
+            if isinstance(value, list):
+                continue
             if pd.isna(value):
                 obj[key] = np.nan
                 
@@ -21,23 +24,21 @@ class WooParser:
     def parse_woo(self, woo: pd.core.series.Series) -> Tuple[List[Tuple[int, str]], Dict[str, any]]:
         woo_json = woo.to_dict()
         
-        # Check if 'bodytext_foi_bodyText' exists and is not NaN
-        if 'bodytext_foi_bodyText' in woo_json and not pd.isna(woo_json['bodytext_foi_bodyText']):
-            raw_text = woo_json['bodytext_foi_bodyText']
-        # If the above condition is not met, check 'bodytext_foi_bodyTextOCR'
-        elif 'bodytext_foi_bodyTextOCR' in woo_json and not pd.isna(woo_json['bodytext_foi_bodyTextOCR']):
-            raw_text = woo_json['bodytext_foi_bodyTextOCR']
-        else:
+        if 'all_foi_bodyText' not in woo_json or len(woo_json['all_foi_bodyText']) == 0:
             return None, None
         
-        # Delete keys if they exist in woo_json
-        woo_json.pop('bodytext_foi_bodyText', None)
-        woo_json.pop('bodytext_foi_bodyTextOCR', None)
-                
+        # Create a tuple with the index and the bodyText
+        tuple_bodyText = [(i, s) for i, s in enumerate(woo_json['all_foi_bodyText'])]
+        
+        if len(tuple_bodyText) == 0:
+            return None, None
+        
+        # Delete the 'all_foi_bodyText' key from the dictionary
+        woo_json.pop('all_foi_bodyText', None)
+
         # Convert 'NaT' to 'NaN' in the dictionary, and timestamps to string
         self.convert_nat_to_nan(woo_json)
         self.convert_timestamp_to_str(woo_json)
-        
-        # Return 0 tuple, because the way we are currently preprocessing, we only have 1 page.        
-        return [(0, raw_text)], woo_json
+       
+        return tuple_bodyText, woo_json
     
