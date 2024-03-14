@@ -190,7 +190,10 @@ class Ingester:
                 woo_data = woo_data.drop(files_in_store, errors='ignore')
                 collection = vector_store.get()  # dict_keys(['ids', 'embeddings', 'documents', 'metadatas'])
                 collection_ids = [int(id) for id in collection['ids']]
-                start_id = max(collection_ids) + 1
+                if len(collection_ids) == 0:
+                    start_id = 0
+                else:
+                    start_id = max(collection_ids) + 1
             # Else it needs to be created first
             else:
                 logger.info(f"Vector store to be created for folder {self.content_folder}")
