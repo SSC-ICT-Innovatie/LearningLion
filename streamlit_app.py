@@ -138,10 +138,11 @@ def handle_query(my_querier, my_prompt: str):
                     st.markdown("---")
                 if settings.DATA_TYPE == "woo":
                     source_link = f', source: [link]({document.metadata["documents_dc_source"]})' if document.metadata.get("documents_dc_source") else ""
-                    st.markdown(f'''**id: {document.metadata['id']},
+                    st.markdown(f'''**Document id: {document.metadata['foi_documentId']},
+                                page: {document.metadata['page_number']},
                                 chunk: {document.metadata['chunk']},
                                 score: {scores[index]:.4f},
-                                dossiers_dc_title: {document.metadata['dossiers_dc_title']}{source_link}**  ''')
+                                dossier: {document.metadata['dossiers_dc_title']}{source_link}**  ''')
                 else:
                     st.markdown(f'''**page: {document.metadata['page_number']},
                                 chunk: {document.metadata['chunk']},
