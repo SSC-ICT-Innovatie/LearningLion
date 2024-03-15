@@ -69,21 +69,12 @@ If you want to use one of the many open source models on Huggingface and use the
 * Enter your Hugging Face API key in the second line of the .env file :<br>
 HUGGINGFACEHUB_API_TOKEN="hf_....."<br>
 
-
 ### Ingesting documents
-The file ingest.py can be used to vectorize all documents in a chosen folder and store the vectors and texts in a vector database for later use.<br>
-Execution is done in the activated virtual environment using commandline command:<br>
-<code>python ingest.py</code>
+Before asking questions about documents we first need to vectorize them, for this ingest.py is used. To do this first make a subfolder in the docs folder containing the documents you want to ask questions about, give the folder a recognizable name with only lower case letters. Subsequently type <br><code>python ingest.py</code> in an activated virtual environment. This asks you which folder you want to vectorize and you can type the name of the folder with the relevant documents. 
 
 ### Querying documents
-The file query.py can be used to query any folder with documents, provided that the associated vector database exists.<br>
-Execution is done in the activated virtual environment using commandline command:<br>
-<code>python query.py</code>
-
-### Querying multiple documents with multiple questions in batch
-The file review.py uses the standard question-answer technique but allows you to ask multiple questions to each document in a folder. 
-All the results are gathered in a .csv file.<br>
-<code>python review.py</code>
+To ask questions about documents in your virtual environment you can use the file query.py (the necessary folder needs to be ingested). In order to do so just type <br>
+<code>python query.py</code> in your activated virtual environment, and type in the name of the folder containing the documents you want to ask questions about. 
 
 ### Ingesting and querying documents through a Streamlit User Interface
 The functionalities described above can also be used through a User Interface.<br>
@@ -91,6 +82,9 @@ The UI can be started by using commandline command:<br>
 <code>streamlit run streamlit_app.py</code><br>
 When this command is used, a browser session will open automatically
 
+### Querying multiple documents with multiple questions in batch
+You can also ask multiple questions at the same time, the code will run each question through your RAG pipeline and save the relevant questions and answers in a .csv file. To do this go to the folder containing the relevant documents in docs, make a subfolder named review and make a .txt file in that folder containing the relevant questions. Now type in your command window:
+<br><code>python review.py</code> and type in the name of the folder containing the documents your questions are about. If you do this locally and the .txt file contains a lot of questions it might take a while, but at the end a .csv file should be saved in the review folder containing the questions and automatically generated answers. 
 
 ### Evaluation of Question Answer results
 The file evaluate.py can be used to evaluate the generated answers for a list of questions, provided that the file eval.json exists, containing 
