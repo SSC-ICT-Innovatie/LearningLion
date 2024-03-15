@@ -44,6 +44,14 @@ NB: The chosen name of the environment is here learninglion. It can be changed t
 The file settings_template.py contains all parameters that can be used and needs to be copied to settings.py. In settings.py, fill in the parameter values you want to use for your use case. 
 Examples and restrictions for parameter values are given in the comment lines. Among other things you need to decide what models you want to use and if you want to run them locally (on your own hardware) or externally (using the hardware from for example OpenAI or Huggingface by using an API key). 
 
+If you want to run this locally you will need to do the following:
+
+1. Download Ollama: https://ollama.com/
+2. In settings choice LLM_TYPE = "local_llm"
+3. Go to models and choose a model you want to use, we recommend mistral-openorca especially when working in non-english languages, but you can experiment with different models yourself.
+* set LLM_MODEL_TYPE = model_name so in our example LLM_MODEL_TYPE = mistral-openorca
+4. In settings choice EMBEDDING_PROVIDER = "local_embeddings", choice an embeddings model from: https://huggingface.co/models?library=sentence-transformers&sort=trending een embedding-model and set EMBEDDINGS_MODEL = "jegormeister/bert-base-dutch-cased"
+
 If you want to do the latter and use the LLM's or Embedding models provided by OpenAI (GPT3.5 / GPT4 / Text-Embeddings-Ada-002) you will need to do the following:
 
 1. Go to [https://platform.openai.com/docs/overview ](https://auth0.openai.com/u/signup/identifier?state=hKFo2SAxWUNzRWVLbFJfWnFkYzAyNm5oTFRkbF8xZ2NJNkhSV6Fur3VuaXZlcnNhbC1sb2dpbqN0aWTZIDJBaFhUNTB6RWx1VkRaSXZ6U3JLQ2NDaUdwY255Mjlao2NpZNkgRFJpdnNubTJNdTQyVDNLT3BxZHR3QjNOWXZpSFl6d0Q) and either login or sign up, this option costs money (a fraction of a cent per question)
@@ -60,7 +68,6 @@ If you want to use one of the many open source models on Huggingface and use the
 * When registered and logged in, you can get your API key in your Hugging Face profile settings
 * Enter your Hugging Face API key in the second line of the .env file :<br>
 HUGGINGFACEHUB_API_TOKEN="hf_....."<br>
-
 
 
 ### Ingesting documents
@@ -84,12 +91,6 @@ The UI can be started by using commandline command:<br>
 <code>streamlit run streamlit_app.py</code><br>
 When this command is used, a browser session will open automatically
 
-### Ingesting and querying documents through a Flask User Interface
-The functionalities described above can also be used through a Flask User Interface.<br>
-The flask UI can be started in the activated virtual environment using commandline command:<br>
-<code>python flask_app.py</code>
-The Flask UI is tailored for future use in production and contains more insight into the chunks (used) and also contains user admin functionality among others.<br>
-For a more detailed description and installation, see the readme file in the  flask_app folder
 
 ### Evaluation of Question Answer results
 The file evaluate.py can be used to evaluate the generated answers for a list of questions, provided that the file eval.json exists, containing 
@@ -103,6 +104,14 @@ All evaluation results can be viewed by using a dedicated User Interface.<br>
 This evaluation UI can be started by using commandline command:<br>
 <code>streamlit run streamlit_evaluate.py</code><br>
 When this command is used, a browser session will open automatically
+
+
+### Ingesting and querying documents through a Flask User Interface
+The functionalities described above can also be used through a Flask User Interface.<br>
+The flask UI can be started in the activated virtual environment using commandline command:<br>
+<code>python flask_app.py</code>
+The Flask UI is tailored for future use in production and contains more insight into the chunks (used) and also contains user admin functionality among others.<br>
+For a more detailed description and installation, see the readme file in the  flask_app folder
 
 ## Tools
 - **LangChain**: Framework for developing applications powered by language models
