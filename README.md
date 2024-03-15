@@ -8,7 +8,7 @@ The current repository is based on the repository made by PBL under the directio
 
 A schematic overview of how the application works is shown here:
 
-![RAG flow design](https://github.com/SSC-ICT-Innovatie/LearningLion/blob/main/project_docs/images/RAG%20flow%20design.png
+![RAG flow design](https://github.com/SSC-ICT-Innovatie/LearningLion/blob/main/project_docs/images/RAG%20flow%20design.png)
 
 ## How to use this repo
 ! This repo is tested on a Windows platform
