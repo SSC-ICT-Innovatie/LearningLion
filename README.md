@@ -13,7 +13,7 @@ A schematic overview of how the application works is shown here:
 ## How to use this repo
 ! This repo is tested on a Windows platform
 The instructions as written assume you have Anaconda and Python installed. 
-If not, download python (https://www.python.org/downloads/) and follow this installation guides:
+If not, download Python (https://www.python.org/downloads/) and follow this installation guide for Anaconda:
 https://docs.anaconda.com/free/anaconda/install/windows/.
 
 ### Preparation
@@ -34,8 +34,8 @@ NB: The name of the environment is learninglion by default. It can be changed to
 1. Open an Anaconda prompt or other command prompt
 2. Go to the root folder of the project and create a Python environment with pip using commandline command<br>
 <code>python -m venv venv</code><br>
-This will create a basic virtual environment folder named venv in the root of your project folder
-NB: The chosen name of the environment is here venv. It can be changed to a name of your choice
+This will create a basic virtual environment folder named venv in the root of your project folder<br>
+NB: The chosen name of the environment is here venv. It can be changed to a name of your choice.
 1. Activate this environment using commandline command<br>
 <code>venv\Scripts\activate</code><br>
 1. All required packages can now be installed with command line command<br>
