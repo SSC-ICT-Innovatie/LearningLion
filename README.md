@@ -13,12 +13,12 @@ A schematic overview of how the application works is shown here:
 ## How to use this repo
 ! This repo is tested on a Windows platform
 The instructions as written assume you have Anaconda and Python installed. 
-If not, download python (https://www.python.org/downloads/) and follow this installation guides:
-https://docs.anaconda.com/free/anaconda/install/windows/ 
+If not, download Python (https://www.python.org/downloads/) and follow this installation guide for Anaconda:
+https://docs.anaconda.com/free/anaconda/install/windows/.
 
 ### Preparation
-1. Open your terminal (e.g. anaconda powershell prompt) and open the folder in which you want to install this repository, for example make a folder called Repositories and open it in your terminal (you can use the command cd to go to the necessary folder, for example cd windows/users/repositories)
-2. Clone this repo with the command <br><code> git clone https://github.com/SSC-ICT-Innovatie/LearningLion.git </code><br>
+1. Open your terminal (e.g. anaconda powershell prompt) and open the folder in which you want to install this repository, for example make a folder called Repositories and open it in your terminal (you can use the command cd to go to the necessary folder, for example `cd windows/users/repositories`).
+2. Clone this repo with the command <br><code>git clone https://github.com/SSC-ICT-Innovatie/LearningLion.git</code><br>
 3. Create a subfolder vector_stores in the root folder of the cloned repo
   
 ### Conda virtual environment setup
@@ -27,71 +27,67 @@ https://docs.anaconda.com/free/anaconda/install/windows/
 <code>conda env create -f learninglion.yml</code><br>
 NB: The name of the environment is learninglion by default. It can be changed to a name of your choice in the first line of the yml file
 3. Activate this environment using commandline command<br>
-<code>conda activate learninglion</code>
+<code>conda activate learninglion</code><br>
 
 ### Pip virtual environment setup
+! You don't need to set up a pip virtual environment, if you already have your conda environment set up.
 1. Open an Anaconda prompt or other command prompt
 2. Go to the root folder of the project and create a Python environment with pip using commandline command<br>
 <code>python -m venv venv</code><br>
-This will create a basic virtual environment folder named venv in the root of your project folder
-NB: The chosen name of the environment is here learninglion. It can be changed to a name of your choice
-3. Activate this environment using commandline command<br>
-<code>venv\Scripts\activate</code>
-4. All required packages can now be installed with command line command<br>
-<code>pip install -r requirements.txt</code>
+This will create a basic virtual environment folder named venv in the root of your project folder<br>
+NB: The chosen name of the environment is here venv. It can be changed to a name of your choice.
+1. Activate this environment using commandline command<br>
+<code>venv\Scripts\activate</code><br>
+1. All required packages can now be installed with command line command<br>
+<code>pip install -r requirements.txt</code><br>
 
 ### Setting parameters
 The file settings_template.py contains all parameters that can be used and needs to be copied to settings.py. In settings.py, fill in the parameter values you want to use for your use case. 
 Examples and restrictions for parameter values are given in the comment lines. Among other things you need to decide what models you want to use and if you want to run them locally (on your own hardware) or externally (using the hardware from for example OpenAI or Huggingface by using an API key). 
 
-If you want to run this locally you will need to do the following:
+If you want to run this locally using Ollama you will need to do the following:
 
 1. Download Ollama: https://ollama.com/
-2. In settings choice LLM_TYPE = "local_llm"
-3. Go to models and choose a model you want to use, we recommend mistral-openorca especially when working in non-english languages, but you can experiment with different models yourself.
-* set LLM_MODEL_TYPE = model_name so in our example LLM_MODEL_TYPE = mistral-openorca
-4. In settings choice EMBEDDING_PROVIDER = "local_embeddings", choice an embeddings model from: https://huggingface.co/models?library=sentence-transformers&sort=trending een embedding-model and set EMBEDDINGS_MODEL = "jegormeister/bert-base-dutch-cased"
+2. In settings choice `LLM_TYPE = "local_llm"`
+3. Go to models and choose a model you want to use, we recommend mistral-openorca especially when working in non-english languages, but you can experiment with different models yourself. Set `LLM_MODEL_TYPE = <model_name>`. So in our example `LLM_MODEL_TYPE = "mistral-openorca"`.
+4. In settings choice `EMBEDDING_PROVIDER = "local_embeddings"`, choose an embeddings model from: https://huggingface.co/models?library=sentence-transformers&sort=trending. In the settings, set the embedding-model to that name `EMBEDDINGS_MODEL = "jegormeister/bert-base-dutch-cased"`.
 
-If you want to do the latter and use the LLM's or Embedding models provided by OpenAI (GPT3.5 / GPT4 / Text-Embeddings-Ada-002) you will need to do the following:
+If you want to do the latter and use the LLM's or Embedding models provided by OpenAI (GPT-3.5 / GPT-4 / Text-Embeddings-Ada-002) you will need to do the following:
 
-1. Go to [https://platform.openai.com/docs/overview ](https://auth0.openai.com/u/signup/identifier?state=hKFo2SAxWUNzRWVLbFJfWnFkYzAyNm5oTFRkbF8xZ2NJNkhSV6Fur3VuaXZlcnNhbC1sb2dpbqN0aWTZIDJBaFhUNTB6RWx1VkRaSXZ6U3JLQ2NDaUdwY255Mjlao2NpZNkgRFJpdnNubTJNdTQyVDNLT3BxZHR3QjNOWXZpSFl6d0Q) and either login or sign up, this option costs money (a fraction of a cent per question)
-2. Create a file .env and enter your OpenAI API key in the first line of this file :<br>
-OPENAI_API_KEY="sk-....."<br> 
-Save and close the .env file<br>
-* In case you don't have an OpenAI API key yet, you can obtain one here: https://platform.openai.com/account/api-keys
-* Click on + Create new secret key
-* Enter an identifier name (optional) and click on Create secret key
+1. Go to [https://platform.openai.com/docs/overview](https://auth0.openai.com/u/signup/identifier?state=hKFo2SAxWUNzRWVLbFJfWnFkYzAyNm5oTFRkbF8xZ2NJNkhSV6Fur3VuaXZlcnNhbC1sb2dpbqN0aWTZIDJBaFhUNTB6RWx1VkRaSXZ6U3JLQ2NDaUdwY255Mjlao2NpZNkgRFJpdnNubTJNdTQyVDNLT3BxZHR3QjNOWXZpSFl6d0Q) and either login or sign up, this option costs money (a fraction of a cent per question).
+2. Create a file `.env` and enter your OpenAI API key in the first line of this file :<br>
+<code>OPENAI_API_KEY="sk-....."</code><br> 
+Save and close the `.env` file.<br>
+* In case you don't have an OpenAI API key yet, you can obtain one here: https://platform.openai.com/account/api-keys.
+* Click on + Create new secret key.
+* Enter an identifier name (optional) and click on Create secret key.
 
 If you want to use one of the many open source models on Huggingface and use their hardware (so run it externally):
 
-* register at https://huggingface.co/join
-* When registered and logged in, you can get your API key in your Hugging Face profile settings
-* Enter your Hugging Face API key in the second line of the .env file :<br>
-HUGGINGFACEHUB_API_TOKEN="hf_....."<br>
+* Register at https://huggingface.co/join.
+* When registered and logged in, you can get your API key in your Hugging Face profile settings.
+* Enter your Hugging Face API key in the second line of the `.env` file:<br>
+<code>HUGGINGFACEHUB_API_TOKEN="hf_....."</code><br>
 
 ### Ingesting documents
-Before asking questions about documents we first need to vectorize them, for this ingest.py is used. To do this first make a subfolder in the docs folder containing the documents you want to ask questions about, give the folder a recognizable name with only lower case letters. Subsequently type <br><code>python ingest.py</code> in an activated virtual environment. This asks you which folder you want to vectorize and you can type the name of the folder with the relevant documents. 
+Before asking questions about documents we first need to vectorize them, for this ingest.py is used. To do this first make a subfolder in the docs folder containing the documents you want to ask questions about, give the folder a recognizable name with only lower case letters. Subsequently type `python ingest.py` in an activated virtual environment. This asks you which folder you want to vectorize and you can type the name of the folder with the relevant documents.
 
 ### Querying documents
-To ask questions about documents in your virtual environment you can use the file query.py (the necessary folder needs to be ingested). In order to do so just type <br>
-<code>python query.py</code> in your activated virtual environment, and type in the name of the folder containing the documents you want to ask questions about. 
+To ask questions about documents in your virtual environment you can use the file query.py (the necessary folder needs to be ingested). In order to do so just type `python query.py` in your activated virtual environment, and type in the name of the folder containing the documents you want to ask questions about. 
 
 ### Ingesting and querying documents through a Streamlit User Interface
-The functionalities described above can also be used through a User Interface.<br>
-The UI can be started by using commandline command:<br>
-<code>streamlit run streamlit_app.py</code><br>
-When this command is used, a browser session will open automatically
+The functionalities described above can also be used through a User Interface. The UI can be started by using commandline command: `streamlit run streamlit_app.py`. When this command is used, a browser session will open automatically.
 
 ### Querying multiple documents with multiple questions in batch
-You can also ask multiple questions at the same time, the code will run each question through your RAG pipeline and save the relevant questions and answers in a .csv file. To do this go to the folder containing the relevant documents in docs, make a subfolder named review and make a .txt file in that folder containing the relevant questions. Now type in your command window:
-<br><code>python review.py</code> and type in the name of the folder containing the documents your questions are about. If you do this locally and the .txt file contains a lot of questions it might take a while, but at the end a .csv file should be saved in the review folder containing the questions and automatically generated answers. 
+You can also ask multiple questions at the same time, the code will run each question through your RAG pipeline and save the relevant questions and answers in a `.csv` file. To do this go to the folder containing the relevant documents in docs, make a subfolder named "review" and make a `.txt` file in that folder containing the relevant questions. Now type in your command window:
+`python review.py` and type in the name of the folder containing the documents your questions are about. If you do this locally and the `.txt` file contains a lot of questions it might take a while, but at the end a `.csv` file should be saved in the review folder containing the questions and automatically generated answers. 
 
 ### Evaluation of Question Answer results
-The file evaluate.py can be used to evaluate the generated answers for a list of questions, provided that the file eval.json exists, containing 
-not only the list of questions but also the related list of desired answers (ground truth).<br>
-Evaluation is done at folder level in the activated virtual environment using commandline command:<br>
-<code>python evaluate.py</code><br>
-It is also possible to run an evaluation over all folders with <code>python evaluate_all.py</code>
+The file evaluate.py can be used to evaluate the generated answers for a list of questions, provided that the file eval.json exists, containing not only the list of questions but also the related list of desired answers (ground truth).<br>
+Evaluation is done at folder level in the activated virtual environment using commandline command:`python evaluate.py` It is also possible to run an evaluation over all folders with `python evaluate_all.py`. The results will be generated in a `.tsv` file. Which can be opened in Microsoft Excel to have a clear overview of the results. More info on the metrics shown in the results can be found here: https://docs.ragas.io/en/stable/getstarted/evaluation.html#metrics/.
+
+#### Generating test data for evaluation
+TODO
 
 ### Monitoring the evaluation results through a Streamlit User Interface
 All evaluation results can be viewed by using a dedicated User Interface.<br>
