@@ -12,7 +12,7 @@ A schematic overview of how the application works is shown here:
 ![RAG flow design](https://github.com/SSC-ICT-Innovatie/LearningLion/blob/main/project_docs/images/RAG%20flow%20design.png)
 
 ## How to use this repo
-! This repo is tested on a Windows platform
+This repo is tested on a Windows platform.
 The instructions as written assume you have Anaconda and Python installed. 
 If not, download Python (https://www.python.org/downloads/) and follow this installation guide for Anaconda:
 https://docs.anaconda.com/free/anaconda/install/windows/.
@@ -29,6 +29,8 @@ https://docs.anaconda.com/free/anaconda/install/windows/.
 NB: The name of the environment is learninglion by default. It can be changed to a name of your choice in the first line of the yml file
 3. Activate this environment using commandline command<br>
 <code>conda activate learninglion</code><br>
+4. All required packages can now be installed with command line command<br>
+<code>pip install -r requirements.txt</code><br> (skip this if you rather work in a virtual environment)
 
 ### Pip virtual environment setup
 ! You don't need to set up a pip virtual environment, if you already have your conda environment set up.
@@ -37,9 +39,9 @@ NB: The name of the environment is learninglion by default. It can be changed to
 <code>python -m venv venv</code><br>
 This will create a basic virtual environment folder named venv in the root of your project folder<br>
 NB: The chosen name of the environment is here venv. It can be changed to a name of your choice.
-1. Activate this environment using commandline command<br>
+3. Activate this environment using commandline command<br>
 <code>venv\Scripts\activate</code><br>
-1. All required packages can now be installed with command line command<br>
+4. All required packages can now be installed with command line command<br>
 <code>pip install -r requirements.txt</code><br>
 
 ## Choosing your parameters
