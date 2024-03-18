@@ -16,7 +16,7 @@ The instructions as written assume you have Anaconda and Python installed.
 If not, download Python (https://www.python.org/downloads/) and follow this installation guide for Anaconda:
 https://docs.anaconda.com/free/anaconda/install/windows/.
 
-### Preparation
+## Preparation
 1. Open your terminal (e.g. anaconda powershell prompt) and open the folder in which you want to install this repository, for example make a folder called Repositories and open it in your terminal (you can use the command cd to go to the necessary folder, for example `cd windows/users/repositories`).
 2. Clone this repo with the command <br><code>git clone https://github.com/SSC-ICT-Innovatie/LearningLion.git</code><br>
 3. Create a subfolder vector_stores in the root folder of the cloned repo
@@ -41,7 +41,7 @@ NB: The chosen name of the environment is here venv. It can be changed to a name
 1. All required packages can now be installed with command line command<br>
 <code>pip install -r requirements.txt</code><br>
 
-### Setting parameters
+## Choosing your parameters
 The file settings_template.py contains all parameters that can be used and needs to be copied to settings.py. In settings.py, fill in the parameter values you want to use for your use case. 
 Examples and restrictions for parameter values are given in the comment lines. Among other things you need to decide what models you want to use and if you want to run them locally (on your own hardware) or externally (using the hardware from for example OpenAI or Huggingface by using an API key). 
 
@@ -69,14 +69,27 @@ If you want to use one of the many open source models on Huggingface and use the
 * Enter your Hugging Face API key in the second line of the `.env` file:<br>
 <code>HUGGINGFACEHUB_API_TOKEN="hf_....."</code><br>
 
+## Using the repository
+
+In order to use this repository you need to be in the right folder and right virtual environment. If you are not in the right virtual environment you need to activate your virtual environment:
+<br><code>conda activate learninglion</code><br>
+If you are not in the right folder (LearningLion) you need to move to that folder, with the command cd you can move to the right folder, for example:
+<br><code> cd windows/users/repositories/LearningLion </code><br> ofcourse if you have cloned the LearningLion repository to a different path you need to adjust to go to where you saved it.
+
+This allows a couple of functionalities: 
+* You can launch a user interface in which you can select a document folder and ask questions about it
+* You can also embed your documents and ask questions through your command terminal, additionally through the command terminal you can automatically ask a larger set of questions and save the answers or automatically evaluate the answers.
+We will walk through how to use these different options below, remember to choose the right settings before using a functionality.
+
+### Asking questions about your documents through a User Interface
+With the commandline command: `streamlit run streamlit_app.py` you can start an interface. When this command is used, a browser session will open automatically. In this browser you can ask questions about documents you put in the docs fodler, there is a little explainer on the left side of the screen that should be read the first time using the online interface.
+
 ### Ingesting documents
-Before asking questions about documents we first need to vectorize them, for this ingest.py is used. To do this first make a subfolder in the docs folder containing the documents you want to ask questions about, give the folder a recognizable name with only lower case letters. Subsequently type `python ingest.py` in an activated virtual environment. This asks you which folder you want to vectorize and you can type the name of the folder with the relevant documents.
+We can also ask questions, either 1 at a time or in multiples, through the command terminal. In this case we need to vectorize the documents we want to ask questions about first.
+For this ingest.py is used. To do this first make a subfolder in the docs folder containing the documents you want to ask questions about, give the folder a recognizable name with only lower case letters. Subsequently type `python ingest.py` in an activated virtual environment. This asks you which folder you want to vectorize and you can type the name of the folder with the relevant documents.
 
 ### Querying documents
 To ask questions about documents in your virtual environment you can use the file query.py (the necessary folder needs to be ingested). In order to do so just type `python query.py` in your activated virtual environment, and type in the name of the folder containing the documents you want to ask questions about. 
-
-### Ingesting and querying documents through a Streamlit User Interface
-The functionalities described above can also be used through a User Interface. The UI can be started by using commandline command: `streamlit run streamlit_app.py`. When this command is used, a browser session will open automatically.
 
 ### Querying multiple documents with multiple questions in batch
 You can also ask multiple questions at the same time, the code will run each question through your RAG pipeline and save the relevant questions and answers in a `.csv` file. To do this go to the folder containing the relevant documents in docs, make a subfolder named "review" and make a `.txt` file in that folder containing the relevant questions. Now type in your command window:
