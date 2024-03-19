@@ -1,3 +1,5 @@
+# gitignore specifies which changes should be ignored when uploading changes made locally to the public GitHub page, we want improvements in the code we tested and worked to be uploaded. 
+# We do not want the specific documents we used and saved to be publically uploaded for example. This makes sure the wrong files aren't uploaded.
 # project specific folders
 /dev
 /vector_stores
