@@ -52,8 +52,9 @@ If you want to run this locally using Ollama you will need to do the following:
 
 1. Download Ollama: https://ollama.com/
 2. In settings choice `LLM_TYPE = "local_llm"`
-3. Go to models and choose a model you want to use, we recommend mistral-openorca especially when working in non-english languages, but you can experiment with different models yourself. Set `LLM_MODEL_TYPE = <model_name>`. So in our example `LLM_MODEL_TYPE = "mistral-openorca"`.
-4. In settings choice `EMBEDDING_PROVIDER = "local_embeddings"`, choose an embeddings model from: https://huggingface.co/models?library=sentence-transformers&sort=trending. In the settings, set the embedding-model to that name `EMBEDDINGS_MODEL = "jegormeister/bert-base-dutch-cased"`.
+3. Go to models and choose a model you want to use, we recommend zephyr and mistral-openorca especially when working in non-english languages, if you have the memory Mixtral can also be a good choice (this model is 26 GB compared to 4 GB for mistral-openorca, but should perform better) you can experiment with different models yourself. Set `LLM_MODEL_TYPE = <model_name>`. So in our example `LLM_MODEL_TYPE = "mistral-openorca"`.
+4. download the model on your device by typing <code> ollama pull model_name </code> in your terminal, e.g. <code> ollama pull mistral-openorce </code>
+5. In settings choice `EMBEDDING_PROVIDER = "local_embeddings"`, choose an embeddings model from: https://huggingface.co/models?library=sentence-transformers&sort=trending. In the settings, set the embedding-model to that name `EMBEDDINGS_MODEL = "jegormeister/bert-base-dutch-cased"`.
 
 If you want to do the latter and use the LLM's or Embedding models provided by OpenAI (GPT-3.5 / GPT-4 / Text-Embeddings-Ada-002) you will need to do the following:
 
