@@ -79,13 +79,11 @@ def main() -> None:
     df_result = pd.DataFrame(columns=["question", "answer", "sources"])
 
     # create the query chain with a search filter and answer each question
-    cntrow = 0
-    for review_question in review_questions:
-        cntrow += 1
-        querier.make_chain(content_folder_name, vectordb_folder_path, None)
+    for index, review_question in enumerate(review_questions):
+        querier.make_chain(content_folder_name, vectordb_folder_path)
         # Generate answer
         answer, sources = generate_answer(querier, review_question)
-        df_result.loc[cntrow] = [review_question, answer, sources]
+        df_result.loc[index] = [review_question, answer, sources]
     output_path = os.path.join(content_folder_path, "review", "result.tsv")
     # sort on question, then on paper
     df_result = df_result.sort_values(by=["question"])
