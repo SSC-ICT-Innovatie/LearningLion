@@ -81,13 +81,13 @@ def getEmbeddings(embeddings_provider, embeddings_model, local_api_url, azureope
     elif embeddings_provider == "huggingface":
         embeddings = HuggingFaceEmbeddings(model_name=embeddings_model)
     elif embeddings_provider == "local_embeddings":
-        if local_api_url is not None:
-            embeddings = OllamaEmbeddings(
-                base_url=local_api_url,
-                model=embeddings_model)
-        else:
-            embeddings = OllamaEmbeddings(
-                model=embeddings_model)
+        model_name = embeddings_model
+        model_kwargs = {'device': 'cpu'}
+        encode_kwargs = {'normalize_embeddings': False}
+        embeddings = HuggingFaceEmbeddings(
+            model_name=model_name,
+            model_kwargs=model_kwargs,
+            encode_kwargs=encode_kwargs )
         logger.info("Loaded local embeddings: " + embeddings_model)
     elif embeddings_provider == "azureopenai":
         logger.info("Retrieve " + embeddings_model)

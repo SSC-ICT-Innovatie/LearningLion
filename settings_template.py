@@ -36,7 +36,7 @@ CHAIN_VERBOSITY = False
 
 # ######### THE SETTINGS BELOW CAN BE USED FOR TESTING AND CUSTOMIZED TO YOUR PREFERENCE ##########
 # LLM_TYPE must be one of: "chatopenai", "huggingface", "local_llm", "azureopenai"
-LLM_TYPE = "chatopenai"
+LLM_TYPE = "local_llm"
 
 # - LLM_MODEL_TYPE must be one of: "gpt35", "gpt35_16", "gpt4" if LLM_TYPE is "chatopenai". Default is "gpt35"
 #   Context window sizes are currently: "gpt35": 4097 tokens (equivalent to ~3000 words), "gpt35_16": 16385 tokens, "gpt4": 8192 tokens
@@ -46,7 +46,7 @@ LLM_TYPE = "chatopenai"
 #   Context window sizes are currently: "GoogleFlan": ? tokens, "llama2": ? tokens
 # - LLM_MODEL_TYPE must be one of the Ollama downloaded models, e.g. "llama2" "mini-orca" or "zephyr". See also https://ollama.ai/library
 # - LLM_MODEL_TYPE must be the deployment name if LLM_TYPE is "azureopenai"
-LLM_MODEL_TYPE = "gpt35"
+LLM_MODEL_TYPE = "mistral-openorca"
 
 # API_URL must be the URL to your (local) API
 # If LLM_TYPE is "local_llm" and model is run on your local machine, API_URL should be "localhost:11434" by default
@@ -58,13 +58,13 @@ API_URL = "http://127.0.0.1:11434"
 AZUREOPENAI_API_VERSION = "2023-08-01-preview"
 
 # EMBEDDINGS_PROVIDER must be one of: "openai", "huggingface", "local_embeddings", "azureopenai"
-EMBEDDINGS_PROVIDER = "openai"
+EMBEDDINGS_PROVIDER = "local_embeddings"
 
 # - EMBEDDINGS_MODEL must be one of: "text-embedding-ada-002" if EMBEDDINGS_PROVIDER is "openai"
 # - EMBEDDINGS_MODEL must be one of: "all-mpnet-base-v2" if EMBEDDINGS_PROVIDER is "huggingface"
-# - EMBEDDINGS_MODEL must be one of the locally downloaded models, e.g. "llama2" if EMBEDDINGS_PROVIDER is "local_embeddings"
+# - EMBEDDINGS_MODEL must be a model name from here https://huggingface.co/models?pipeline_tag=sentence-similarity&library=sentence-transformers&sort=trending"
 # - EMBEDDINGS_MODEL must be the embeddings deployment name if EMBEDDINGS_PROVIDER is "azureopenai"
-EMBEDDINGS_MODEL = "text-embedding-ada-002"
+EMBEDDINGS_MODEL = "NetherlandsForensicInstitute/robbert-2022-dutch-sentence-transformers"
 
 # TEXT_SPLITTER_METHOD represents the way in which raw text chunks are created, must be one of:
 # "RecursiveCharacterTextSplitter" (split text to fixed size chunks) or
@@ -88,11 +88,11 @@ SCORE_THRESHOLD = 0.8
 VECDB_TYPE = "chromadb"
 
 # CHUNK_SIZE represents the maximum allowed size of text chunks, value must be integer
-CHUNK_SIZE = 1000
+CHUNK_SIZE = 1024
 
 # CHUNK_K represents the number of chunks that is returned from the vector database as input for the LLM, value must be integer (>=1)
 # NB: CHUNK_SIZE and CHUNK_K are related, make sure that CHUNK_K * CHUNK_SIZE < LLM window size
 CHUNK_K = 4
 
 # CHUNK_OVERLAP represents the overlap between 2 sequential text chunks, value must be integer (>=0 and < CHUNK_SIZE)
-CHUNK_OVERLAP = 200
+CHUNK_OVERLAP = 256
