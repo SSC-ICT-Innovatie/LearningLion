@@ -1,4 +1,3 @@
-
 from typing import List
 import os
 import pandas as pd
@@ -8,7 +7,7 @@ from ingest.ingester import Ingester
 from query.querier import Querier
 import utils as ut
 
-
+## checks if the vector store exists for the relevant documents, if so it loads those documents if not it makes the vector store
 def ingest_or_load_documents(content_folder_name: str, content_folder_path: str, vectordb_folder_path: str) -> None:
     '''
     Depending on whether the vector store already exists, files will be chunked and stored in vectorstore or not
@@ -22,7 +21,7 @@ def ingest_or_load_documents(content_folder_name: str, content_folder_path: str,
     else:
         logger.info(f"Vector store already exists for folder {content_folder_name}")
 
-
+# takes the questions in your questions.txt file and prepares them to be answered by the LLM
 def get_review_questions(question_list_path: str) -> List[str]:
     '''
     Convert the file with questions into a list of questions
@@ -36,7 +35,7 @@ def get_review_questions(question_list_path: str) -> List[str]:
             review_questions.append(line.strip("\n"))
     return review_questions
 
-
+# asks every question  with the querier to the LLM
 def generate_answer(querier: Querier, review_question: str):
     '''
     Generate an answer to the given question with the provided Querier instance
@@ -47,6 +46,7 @@ def generate_answer(querier: Querier, review_question: str):
     return response["answer"], response["source_documents"]
 
 
+# Is activated when starting review.py, specifies where questions can be found and which functions should be used, ultimately saves results to csv file after having asked all questions.
 def main() -> None:
     '''
     Main loop of this module
@@ -76,22 +76,19 @@ def main() -> None:
     review_questions = get_review_questions(question_list_path)
 
     # create empty dataframe
-    df_result = pd.DataFrame(columns=["filename", "question", "answer", "sources"])
+    df_result = pd.DataFrame(columns=["question", "answer", "sources"])
 
-    # create the query chain with a search filter and answer each question for each paper
+    # create the query chain with a search filter and answer each question
     cntrow = 0
-    for review_file in review_files:
-        if os.path.isfile(os.path.join(content_folder_path, review_file)):
-            logger.info(f"current file: {review_file}")
-            for review_question in review_questions:
-                cntrow += 1
-                querier.make_chain(content_folder_name, vectordb_folder_path, search_filter={"filename": review_file})
-                # Generate answer
-                answer, sources = generate_answer(querier, review_question)
-                df_result.loc[cntrow] = [review_file, review_question, answer, sources]
+    for review_question in review_questions:
+        cntrow += 1
+        querier.make_chain(content_folder_name, vectordb_folder_path, None)
+        # Generate answer
+        answer, sources = generate_answer(querier, review_question)
+        df_result.loc[cntrow] = [review_question, answer, sources]
     output_path = os.path.join(content_folder_path, "review", "result.tsv")
     # sort on question, then on paper
-    df_result = df_result.sort_values(by=["question", "filename"])
+    df_result = df_result.sort_values(by=["question"])
     df_result.to_csv(output_path, sep="\t", index=False)
 
 
