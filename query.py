@@ -33,7 +33,8 @@ def main():
                 # if the retriever returns one or more chunks with a score above the threshold
                 if response["source_documents"][0][1] >= querier.score_threshold:
                     # log the answer to the question and the sources used for creating the answer
-                    logger.info(f"Answer: {response['answer']}")
+                    if 'answer' in response:
+                        logger.info(f"Answer: {response['answer']}")
                     logger.info("Sources:")
                     for document, score in response["source_documents"]:
                         logger.info(f"score: {score}")

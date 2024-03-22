@@ -127,10 +127,11 @@ def handle_query(my_querier, my_prompt: str):
         # Generate a response
         response = my_querier.ask_question(my_prompt)
     # Display the response in chat message container
-    with st.chat_message("assistant"):
-        st.markdown(response["answer"])
-    # Add the response to chat history
-    st.session_state['messages'].append({"role": "assistant", "content": response["answer"]})
+    if 'answer' in response:
+        with st.chat_message("assistant"):
+            st.markdown(response["answer"])
+        # Add the response to chat history
+        st.session_state['messages'].append({"role": "assistant", "content": response["answer"]})
     if len(response["source_documents"]) > 0:
         with st.expander("Paragraphs used for answer"):
             for index, tuple in enumerate(response["source_documents"]):
