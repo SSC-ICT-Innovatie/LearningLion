@@ -125,7 +125,7 @@ def handle_query(my_querier, my_prompt: str):
     st.session_state['messages'].append({"role": "user", "content": my_prompt})
     with st.spinner("Thinking..."):
         # Generate a response
-        response, scores = my_querier.ask_question(my_prompt)
+        response = my_querier.ask_question(my_prompt)
     # Display the response in chat message container
     with st.chat_message("assistant"):
         st.markdown(response["answer"])
@@ -133,7 +133,8 @@ def handle_query(my_querier, my_prompt: str):
     st.session_state['messages'].append({"role": "assistant", "content": response["answer"]})
     if len(response["source_documents"]) > 0:
         with st.expander("Paragraphs used for answer"):
-            for index, document in enumerate(response["source_documents"]):
+            for index, tuple in enumerate(response["source_documents"]):
+                document, score = tuple
                 if index != 0:
                     st.markdown("---")
                 if settings.DATA_TYPE == "woo":
@@ -141,12 +142,12 @@ def handle_query(my_querier, my_prompt: str):
                     st.markdown(f'''**Document id: {document.metadata['foi_documentId']},
                                 page: {document.metadata['page_number']},
                                 chunk: {document.metadata['chunk']},
-                                score: {scores[index]:.4f},
+                                score: {score:.4f},
                                 dossier: {document.metadata['dossiers_dc_title']}{source_link}**  ''')
                 else:
                     st.markdown(f'''**page: {document.metadata['page_number']},
                                 chunk: {document.metadata['chunk']},
-                                score: {scores[index]:.4f},
+                                score: {score:.4f},
                                 file: {document.metadata['filename']}**''')
                 st.markdown(f"{document.page_content}")
     else:
