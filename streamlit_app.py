@@ -136,6 +136,7 @@ def handle_query(my_querier, my_prompt: str):
         with st.expander("Paragraphs used for answer"):
             for index, tuple in enumerate(response["source_documents"]):
                 document, score = tuple
+                retrieval_method_info = f' , retrieval method: {document.metadata.get("retrieval_method")}' if document.metadata.get("retrieval_method") else ""
                 if index != 0:
                     st.markdown("---")
                 if settings.DATA_TYPE == "woo":
@@ -144,12 +145,12 @@ def handle_query(my_querier, my_prompt: str):
                                 page: {document.metadata['page_number']},
                                 chunk: {document.metadata['chunk']},
                                 score: {score:.4f},
-                                dossier: {document.metadata['dossiers_dc_title']}{source_link}**  ''')
+                                dossier: {document.metadata['dossiers_dc_title']}{source_link}{retrieval_method_info}**''')
                 else:
                     st.markdown(f'''**page: {document.metadata['page_number']},
                                 chunk: {document.metadata['chunk']},
                                 score: {score:.4f},
-                                file: {document.metadata['filename']}**''')
+                                file: {document.metadata['filename']}{retrieval_method_info}**''')
                 st.markdown(f"{document.page_content}")
     else:
         logger.info("No source documents found relating to the question")

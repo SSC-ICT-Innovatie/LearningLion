@@ -37,6 +37,9 @@ def main():
                         logger.info(f"Answer: {response['answer']}")
                     logger.info("Sources:")
                     for document, score in response["source_documents"]:
+                        # check if retrieval_method exists on document.metadata
+                        if document.metadata.get("retrieval_method"):
+                            logger.info(f"Retrieval method: {document.metadata.get('retrieval_method')}")
                         logger.info(f"score: {score}")
                         logger.info(f"Page {document.metadata['page_number']} chunk used: {document.page_content}\n")
             else:
