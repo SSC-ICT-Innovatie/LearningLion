@@ -160,6 +160,9 @@ class Chain(RunnableSerializable[Dict[str, Any], Dict[str, Any]], ABC):
         include_run_info = kwargs.get("include_run_info", False)
         return_only_outputs = kwargs.get("return_only_outputs", False)
 
+        if custom_documents is not None:
+            input["input_documents"] = custom_documents
+
         inputs = self.prep_inputs(input)
         callback_manager = CallbackManager.configure(
             callbacks,
@@ -182,8 +185,6 @@ class Chain(RunnableSerializable[Dict[str, Any], Dict[str, Any]], ABC):
                 if new_arg_supported
                 else self._call(inputs)
             )
-            if custom_documents is not None:
-                outputs["source_documents"] = custom_documents
         except BaseException as e:
             run_manager.on_chain_error(e)
             raise e
