@@ -3,7 +3,7 @@
 # On langchain version==0.1.0. This custom file was necessary, to make it possible to
 # intercept the retrieved documents, by manipulating the output. In this case, it
 # makes it possible to give your own documents as input to the language model.
-# You will be able to see the edited code at the function: `invoke`.
+# You will be able to see the edited code at the functions: `invoke`` and `_call`.
 #
 # All credits to the original authors of the Langchain library.
 
@@ -161,8 +161,7 @@ class Chain(RunnableSerializable[Dict[str, Any], Dict[str, Any]], ABC):
         return_only_outputs = kwargs.get("return_only_outputs", False)
 
         if custom_documents is not None:
-            input["input_documents"] = custom_documents
-
+            custom_documents = [tup[0] for tup in custom_documents]
         inputs = self.prep_inputs(input)
         callback_manager = CallbackManager.configure(
             callbacks,
@@ -181,9 +180,9 @@ class Chain(RunnableSerializable[Dict[str, Any], Dict[str, Any]], ABC):
         )
         try:
             outputs = (
-                self._call(inputs, run_manager=run_manager)
+                self._call(inputs, run_manager=run_manager, custom_documents=custom_documents)
                 if new_arg_supported
-                else self._call(inputs)
+                else self._call(inputs, custom_documents=custom_documents)
             )
         except BaseException as e:
             run_manager.on_chain_error(e)
@@ -301,6 +300,7 @@ class Chain(RunnableSerializable[Dict[str, Any], Dict[str, Any]], ABC):
         self,
         inputs: Dict[str, Any],
         run_manager: Optional[CallbackManagerForChainRun] = None,
+        custom_documents: Optional[List[Document]] = None
     ) -> Dict[str, Any]:
         """Execute the chain.
 
@@ -837,6 +837,7 @@ class BaseConversationalRetrievalChain(Chain):
         self,
         inputs: Dict[str, Any],
         run_manager: Optional[CallbackManagerForChainRun] = None,
+        custom_documents: Optional[List[Document]] = None
     ) -> Dict[str, Any]:
         _run_manager = run_manager or CallbackManagerForChainRun.get_noop_manager()
         question = inputs["question"]
@@ -853,7 +854,9 @@ class BaseConversationalRetrievalChain(Chain):
         accepts_run_manager = (
             "run_manager" in inspect.signature(self._get_docs).parameters
         )
-        if accepts_run_manager:
+        if custom_documents is not None:
+            docs = custom_documents
+        elif accepts_run_manager:
             docs = self._get_docs(new_question, inputs, run_manager=_run_manager)
         else:
             docs = self._get_docs(new_question, inputs)  # type: ignore[call-arg]
