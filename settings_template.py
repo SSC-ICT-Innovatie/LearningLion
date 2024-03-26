@@ -1,11 +1,11 @@
 # relative filepath of logo in user interface, e.g. "./images/nmdc_logo.png"
-APP_LOGO = "./images/nmdc_logo.png"
+APP_LOGO = "./images/bzk-logo.png"
 
 # relative filepath of text file with content for application explanation in Streamlit UI, e.g. "./info/explanation.txt"
 APP_INFO = "./info/explanation.txt"
 
 # header in Streamlit UI, e.g. "ChatNMDC: chat with your documents"
-APP_HEADER = "ChatNMDC: chat with your documents"
+APP_HEADER = "SSC-ICT RAG demo"
 
 # must be "woo", if working with the Woo dataset. Otherwise it will use the default ingester.
 DATA_TYPE = ""
@@ -23,7 +23,7 @@ VECDB_DIR = "./vector_stores"
 EVAL_DIR = "./evaluate"
 
 # header in Streamlit evaluation UI, e.g. "ChatNMDC: evaluation"
-EVAL_APP_HEADER = "ChatNMDC: evaluation"
+EVAL_APP_HEADER = "Evaluation"
 
 # content for evaluation explanation in evaluation user interface, e.g. "./info/evaluation_explanation.txt"
 EVAL_APP_INFO = "./info/evaluation_explanation.txt"
@@ -64,7 +64,7 @@ EMBEDDINGS_PROVIDER = "local_embeddings"
 # - EMBEDDINGS_MODEL must be one of: "all-mpnet-base-v2" if EMBEDDINGS_PROVIDER is "huggingface"
 # - EMBEDDINGS_MODEL must be a model name from here https://huggingface.co/models?pipeline_tag=sentence-similarity&library=sentence-transformers&sort=trending"
 # - EMBEDDINGS_MODEL must be the embeddings deployment name if EMBEDDINGS_PROVIDER is "azureopenai"
-EMBEDDINGS_MODEL = "NetherlandsForensicInstitute/robbert-2022-dutch-sentence-transformers"
+EMBEDDINGS_MODEL = "textgain/allnli-GroNLP-bert-base-dutch-cased"
 
 # TEXT_SPLITTER_METHOD represents the way in which raw text chunks are created, must be one of:
 # "RecursiveCharacterTextSplitter" (split text to fixed size chunks) or
@@ -82,7 +82,7 @@ SEARCH_TYPE = "similarity"
 
 # SCORE_THRESHOLD represents the similarity value that chunks must exceed to qualify for the context, value must be between 0.0 and 1.0, e.g. 0.8
 # This value is only relevant when SEARCH_TYPE has been set to "similarity_score_threshold"
-SCORE_THRESHOLD = 0.8
+SCORE_THRESHOLD = 0.5
 
 # VECDB_TYPE must be one of: "chromadb",
 VECDB_TYPE = "chromadb"
