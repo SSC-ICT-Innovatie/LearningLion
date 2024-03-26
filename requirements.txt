@@ -141,6 +141,7 @@ rpds-py==0.16.2
 rsa==4.9
 safetensors==0.4.1
 schema==0.7.5
+sentence-transformers==2.6.1
 setuptools==68.2.2
 six==1.16.0
 smmap==5.0.1
