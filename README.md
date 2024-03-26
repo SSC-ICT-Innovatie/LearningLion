@@ -1,5 +1,5 @@
 # LearningLion
-This is the English version of the LearningLion project for the Dutch version see: https://github.com/SSC-ICT-Innovatie/LearningLion-web
+This is the English version of the LearningLion project for the Dutch version see: https://github.com/JitseGoutbeek/LerendeLeeuw
 
 ## Description of the project
 The project is a study on the use of generative AI to improve the services of SSC-ICT by supporting employees and optimizing internal processes. In particular, the focus is on generative large language models (LLM), in the form of Retrieval Augmented Generation (RAG), because they can have the most significant impact on the daily work of SSC-ICT employees. The assignment (Speech Recognition & AI) has been approved by the SpB and has been running since the beginning of 2023. 
