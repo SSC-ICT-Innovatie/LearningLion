@@ -114,6 +114,7 @@ def truncate_merge_docs(length:int=10) -> None:
 
     joined_bodytext_documents = bodytext.join(documents, on='foi_documentId')
     result = joined_bodytext_documents.join(dossiers, on='foi_dossierId')
+    result = result[result['dossiers_dc_type_description'] == 'Dossier na Woo/Wob-verzoek']
     
     save_docs(result, f'{new_directory}/woo_merged.csv.gz')
     

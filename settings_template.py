@@ -96,3 +96,13 @@ CHUNK_K = 4
 
 # CHUNK_OVERLAP represents the overlap between 2 sequential text chunks, value must be integer (>=0 and < CHUNK_SIZE)
 CHUNK_OVERLAP = 256
+
+# RETRIEVAL_METHOD must be one of "regular" or "answer_and_question"
+# "regular" use the similarity search only based on the question
+# "answer_and_question" use the similarity search based on the question and the answer and combines these
+RETRIEVAL_METHOD = "answer_and_question"
+
+# GENERATION METHOD must be one of "regular" or "document_only"
+# "regular" will use an LLM to generate an answer based on the question and the retrieved chunks
+# "document_only" will show the retrieved chunks
+GENERATION_METHOD = "regular"

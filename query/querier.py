@@ -1,5 +1,6 @@
 from dotenv import load_dotenv
 from typing import Dict, Tuple, List, Any
+from langchain_core.documents import Document
 from langchain.chains import ConversationalRetrievalChain
 from langchain.schema import AIMessage
 from langchain.schema import HumanMessage
@@ -8,6 +9,7 @@ from loguru import logger
 import settings
 import utils as ut
 from llm_class.llm_class import LLM
+from langchain.prompts import PromptTemplate
 
 
 class Querier:
@@ -37,9 +39,15 @@ class Querier:
         self.azureopenai_api_version = settings.AZUREOPENAI_API_VERSION \
             if azureopenai_api_version is None and settings.AZUREOPENAI_API_VERSION is not None \
             else azureopenai_api_version
+        self.embeddings = ut.getEmbeddings(self.embeddings_provider,
+                                           self.embeddings_model,
+                                           self.local_api_url,
+                                           self.azureopenai_api_version)
 
         # define llm
         self.llm = LLM(self.llm_type, self.llm_model_type, self.local_api_url, self.azureopenai_api_version).get_llm()
+        self.chain = None
+        self.chain_hallucinated = None
 
     def make_agent(self, input_folder, vectordb_folder):
         """
@@ -65,15 +73,9 @@ class Querier:
         self.input_folder = input_folder
         self.vectordb_folder = vectordb_folder
 
-        # get embeddings
-        embeddings = ut.getEmbeddings(self.embeddings_provider,
-                                      self.embeddings_model,
-                                      self.local_api_url,
-                                      self.azureopenai_api_version)
-
         # get chroma vector store
         if self.vecdb_type == "chromadb":
-            self.vector_store = ut.get_chroma_vector_store(self.input_folder, embeddings, self.vectordb_folder)
+            self.vector_store = ut.get_chroma_vector_store(self.input_folder, self.embeddings, self.vectordb_folder)
             # get retriever with some search arguments
             # maximum number of chunks to retrieve
             search_kwargs = {"k": self.chunk_k}
@@ -87,38 +89,92 @@ class Querier:
             logger.info(f"Loaded chromadb from folder {self.vectordb_folder}")
 
         if self.chain_name == "conversationalretrievalchain":
-            self.chain = ConversationalRetrievalChain.from_llm(
-                llm=self.llm,
-                retriever=retriever,
-                chain_type=self.chain_type,
-                verbose=self.chain_verbosity,
-                return_source_documents=True
-            )
+            # TODO: For me, the condense_question_prompt does not work and it does not change anything.
+            base_prompt = "Answer the question in dutch. Answer the question between the triple dashes: ---{question}---"
+            if settings.RETRIEVAL_METHOD == "answer_and_question":
+                from langchain_custom_chain.base import CustomConversationalRetrievalChain
+                logger.info("Using custom chain")
+                self.chain = CustomConversationalRetrievalChain.from_llm(
+                    llm=self.llm,
+                    retriever=retriever,
+                    chain_type=self.chain_type,
+                    verbose=self.chain_verbosity,
+                    return_source_documents=True,
+                    condense_question_prompt=PromptTemplate.from_template(base_prompt)
+                )
+            else:
+                self.chain = ConversationalRetrievalChain.from_llm(
+                    llm=self.llm,
+                    retriever=retriever,
+                    chain_type=self.chain_type,
+                    verbose=self.chain_verbosity,
+                    return_source_documents=True,
+                    condense_question_prompt=PromptTemplate.from_template(base_prompt)
+                )
         logger.info("Executed Querier.make_chain")
+        
+    def get_documents_with_scores(self, question: str) -> List[Tuple[Document, float]]:
+        most_similar_docs = self.vector_store.similarity_search_with_relevance_scores(question, k=self.chunk_k)
+        logger.info(f"Topscore most similar docs: {most_similar_docs[0][1]}")
+        
+        if settings.RETRIEVAL_METHOD == "regular":
+            return most_similar_docs
+        # Else retrieval method is "answer_and_question
+        hallucinated_prompt = f"""Please write a passage to answer the question. The passage should be short, concise, and answer in dutch and in maximum 50 words.
+        Question: {question}
+        Passage:"""
+        hallucinated_answer = self.llm.invoke(hallucinated_prompt)
+        logger.info(f"Hallucinated answer: {hallucinated_answer}")
+        most_similar_docs_hallucinated = self.vector_store.similarity_search_with_relevance_scores(hallucinated_answer.content, k=self.chunk_k)
+        logger.info(f"Topscore most similar docs hallucinated: {most_similar_docs_hallucinated[0][1]}")
+
+        # Add the retrieval method of the docs to the metadata
+        for document, _ in most_similar_docs:
+            document.metadata['retrieval_method'] = "Embedded Question"
+        for document, _ in most_similar_docs_hallucinated:
+            document.metadata['retrieval_method'] = "Embedded Hallucinated Answer"
+            
+        # Merge the two lists
+        merged_list = most_similar_docs + most_similar_docs_hallucinated
+        
+        # Remove duplicates based on the score of each tuple
+        unique_documents = {}
+        for document, score in merged_list:
+            if document.page_content not in unique_documents or unique_documents[document.page_content][1] < score:
+                unique_documents[document.page_content] = (document, score)
+        return sorted(unique_documents.values(), key=lambda x: x[1], reverse=True)
 
     def ask_question(self, question: str) -> Tuple[Dict[str, Any], List[float]]:
         """"
         Finds most similar docs to prompt in vectorstore and determines the response
         If the closest doc found is not similar enough to the prompt, any answer from the LM is overruled by a message
         """
-        # check if any chunk will qualify given the similarity threshold
-        most_similar_docs = \
-            list((score, doc.page_content) for doc, score in
-                 self.vector_store.similarity_search_with_relevance_scores(question, k=self.chunk_k))
-        scores = [most_similar_docs[i][0] for i in range(len(most_similar_docs))]
-        logger.info(f"current question: {question}")
-        logger.info(f"current chat history: {self.chat_history}")
-        # generate response from chain
-        response = self.chain.invoke({"question": question, "chat_history": self.chat_history})
-        # if no chunk qualifies, overrule any answer generated by the LLM with message below
-        if scores[0] < self.score_threshold:
+        prompt_helper = """Answer the following question in Dutch with he corresponding documents. If the answer is not in the documents, just say that the data is not in the documents."""
+        documents = self.get_documents_with_scores(question)
+        
+        if settings.GENERATION_METHOD == "document_only":
+            return {"source_documents": documents}
+        
+        if settings.RETRIEVAL_METHOD == "answer_and_question":
+            # Uses the custom chain
+            response = self.chain.invoke({"question": f"{prompt_helper} {question}", "chat_history": self.chat_history}, custom_documents=documents)
+        else:
+            # Uses the regular Langchain chain
+            response = self.chain.invoke({"question": f"{prompt_helper} {question}", "chat_history": self.chat_history})
+            # Overwrite their documents with the ones we found
+            # This should be the same, but only with the scores added
+            response["source_documents"] = documents
+            
+        # If no chunk qualifies, overrule any answer generated by the LLM with message below
+        _, first_score = response["source_documents"][0]
+        if first_score < self.score_threshold:
             response["answer"] = "I don't know because there is no relevant context containing the answer"
         else:
-            logger.info(f"topscore: {scores[0]}")
-        # logger.info(f"answer: {response['answer']}")
+            logger.info(f"Topscore: {first_score}")
+
         self.chat_history.append(HumanMessage(content=question))
         self.chat_history.append(AIMessage(content=response["answer"]))
-        return response, scores
+        return response
 
     def clear_history(self) -> None:
         """"

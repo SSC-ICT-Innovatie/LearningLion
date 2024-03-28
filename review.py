@@ -6,6 +6,7 @@ from loguru import logger
 from ingest.ingester import Ingester
 from query.querier import Querier
 import utils as ut
+import settings
 
 ## checks if the vector store exists for the relevant documents, if so it loads those documents if not it makes the vector store
 def ingest_or_load_documents(content_folder_name: str, content_folder_path: str, vectordb_folder_path: str) -> None:
@@ -52,7 +53,8 @@ def main() -> None:
     Main loop of this module
     '''
     # Get source folder with papers from user
-    content_folder_name = input("Source folder of documents (without path): ")
+    content_folder_name = ut.get_content_folder_name(only_check_woo=settings.DATA_TYPE == "woo")
+
     # get associated vectordb path
     content_folder_path, vectordb_folder_path = ut.create_vectordb_name(content_folder_name)
     review_files = os.listdir(content_folder_path)

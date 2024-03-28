@@ -3,13 +3,15 @@ from loguru import logger
 # local imports
 from query.querier import Querier
 import utils as ut
+import settings
 
 
 def main():
     # Create instance of Querier once
     querier = Querier()
     # Get source folder with docs from user
-    content_folder_name = input("Source folder of documents (without path): ")
+    # content_folder_name = input("Source folder of documents (without path): ")
+    content_folder_name = ut.get_content_folder_name(only_check_woo=settings.DATA_TYPE)
     # get associated vectordb path
     _, vectordb_folder_path = ut.create_vectordb_name(content_folder_name)
 
@@ -27,16 +29,18 @@ def main():
                 # log the question
                 logger.info(f"\nQuestion: {question}")
                 # Generate answer and include sources used to produce that answer
-                response, scores = querier.ask_question(question)
-                logger.info(f"\nAnswer: {response['answer']}")
+                response = querier.ask_question(question)
                 # if the retriever returns one or more chunks with a score above the threshold
-                if scores[0] >= querier.score_threshold:
+                if response["source_documents"][0][1] >= querier.score_threshold:
                     # log the answer to the question and the sources used for creating the answer
-                    logger.info("\nSources:\n")
-                    cnt = 0
-                    for document in response["source_documents"]:
-                        logger.info(f"score: {scores[cnt]}")
-                        cnt += 1
+                    if 'answer' in response:
+                        logger.info(f"Answer: {response['answer']}")
+                    logger.info("Sources:")
+                    for document, score in response["source_documents"]:
+                        # check if retrieval_method exists on document.metadata
+                        if document.metadata.get("retrieval_method"):
+                            logger.info(f"Retrieval method: {document.metadata.get('retrieval_method')}")
+                        logger.info(f"score: {score}")
                         logger.info(f"Page {document.metadata['page_number']} chunk used: {document.page_content}\n")
             else:
                 ut.exit_program()

@@ -114,11 +114,8 @@ def main():
     querier = Querier()
 
     # Get source folder with evaluation documents from user
-    content_folder_name = input("Source folder of evaluation documents (without path): ")
-    # get associated source folder path and vectordb path
+    content_folder_name = ut.get_content_folder_name(only_check_woo=settings.DATA_TYPE == "woo")
     content_folder_path, vectordb_folder_path = ut.create_vectordb_name(content_folder_name)
-    
-    # ingest documents if documents in source folder path are not ingested yet
     ingest_or_load_documents(content_folder_name, content_folder_path, vectordb_folder_path)    
 
     # create the query chain

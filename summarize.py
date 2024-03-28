@@ -7,14 +7,15 @@ from loguru import logger
 # local imports
 from summarize.summarizer import Summarizer
 import utils
-
+import settings
 
 def main():
     """
     Main function enabling summarization
     """
     # Get source folder with docs from user
-    content_folder_name = input("Source folder of documents (without path): ")
+    content_folder_name = utils.get_content_folder_name(only_check_woo=settings.DATA_TYPE == "woo")
+
     # choose way of summarizing
     summarization_method = input("Summarization Method [Map_Reduce, Refine]: ")
     content_folder_path, vectordb_folder_path = utils.create_vectordb_name(content_folder_name)
