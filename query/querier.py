@@ -149,7 +149,7 @@ class Querier:
         Finds most similar docs to prompt in vectorstore and determines the response
         If the closest doc found is not similar enough to the prompt, any answer from the LM is overruled by a message
         """
-        prompt_helper = """Answer the following question in Dutch with he corresponding documents. If the answer is not in the documents, just say that the data is not in the documents."""
+        SYSTEM_PROMPT = settings.SYSTEM_PROMPT
         documents = self.get_documents_with_scores(question)
         
         if settings.GENERATION_METHOD == "document_only":
@@ -157,10 +157,10 @@ class Querier:
         
         if settings.RETRIEVAL_METHOD == "answer_and_question":
             # Uses the custom chain
-            response = self.chain.invoke({"question": f"{prompt_helper} {question}", "chat_history": self.chat_history}, custom_documents=documents)
+            response = self.chain.invoke({"question": f"{SYSTEM_PROMPT} {question}", "chat_history": self.chat_history}, custom_documents=documents)
         else:
             # Uses the regular Langchain chain
-            response = self.chain.invoke({"question": f"{prompt_helper} {question}", "chat_history": self.chat_history})
+            response = self.chain.invoke({"question": f"{SYSTEM_PROMPT} {question}", "chat_history": self.chat_history})
             # Overwrite their documents with the ones we found
             # This should be the same, but only with the scores added
             response["source_documents"] = documents
