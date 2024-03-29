@@ -125,29 +125,33 @@ def handle_query(my_querier, my_prompt: str):
     st.session_state['messages'].append({"role": "user", "content": my_prompt})
     with st.spinner("Thinking..."):
         # Generate a response
-        response, scores = my_querier.ask_question(my_prompt)
+        response = my_querier.ask_question(my_prompt)
     # Display the response in chat message container
-    with st.chat_message("assistant"):
-        st.markdown(response["answer"])
-    # Add the response to chat history
-    st.session_state['messages'].append({"role": "assistant", "content": response["answer"]})
+    if 'answer' in response:
+        with st.chat_message("assistant"):
+            st.markdown(response["answer"])
+        # Add the response to chat history
+        st.session_state['messages'].append({"role": "assistant", "content": response["answer"]})
     if len(response["source_documents"]) > 0:
         with st.expander("Paragraphs used for answer"):
-            for index, document in enumerate(response["source_documents"]):
+            for index, tuple in enumerate(response["source_documents"]):
+                document, score = tuple
+                retrieval_method_info = f' , retrieval method: {document.metadata.get("retrieval_method")}' if document.metadata.get("retrieval_method") else ""
                 if index != 0:
                     st.markdown("---")
                 if settings.DATA_TYPE == "woo":
-                    source_link = f', source: [link]({document.metadata["documents_dc_source"]})' if document.metadata.get("documents_dc_source") else ""
+                    document_link = f', document: [link]({document.metadata["documents_dc_source"]})' if document.metadata.get("documents_dc_source") else ""
+                    dossier_link = f', source: [link](https://pid.wooverheid.nl/?pid={document.metadata["foi_dossierId"]})' if document.metadata.get("foi_dossierId") else ""
                     st.markdown(f'''**Document id: {document.metadata['foi_documentId']},
                                 page: {document.metadata['page_number']},
                                 chunk: {document.metadata['chunk']},
-                                score: {scores[index]:.4f},
-                                dossier: {document.metadata['dossiers_dc_title']}{source_link}**  ''')
+                                dossier: {document.metadata['dossiers_dc_title']},
+                                score: {score:.4f}{retrieval_method_info}{document_link}{dossier_link}**''')
                 else:
                     st.markdown(f'''**page: {document.metadata['page_number']},
                                 chunk: {document.metadata['chunk']},
-                                score: {scores[index]:.4f},
-                                file: {document.metadata['filename']}**''')
+                                file: {document.metadata['filename']}
+                                score: {score:.4f}{retrieval_method_info}**''')
                 st.markdown(f"{document.page_content}")
     else:
         logger.info("No source documents found relating to the question")
