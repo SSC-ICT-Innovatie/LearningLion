@@ -8,7 +8,7 @@ import settings
 def main():
     # Create instance of Querier once
 # Get source folder with docs from user
-    content_folder_name = ut.get_content_folder_name(only_check_woo=settings.DATA_TYPE == "woo")
+    content_folder_name = ut.get_content_folder_name()
 
     question_list_name = input('Please insert file name of question list: ') + '.txt'
     # get associated vectordb path

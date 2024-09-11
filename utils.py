@@ -104,14 +104,10 @@ def get_timestamp():
     return str(dt.datetime.now())
 
 
-def get_content_folder_name(only_check_woo:bool=False) -> str:
-    '''Select a folder from the DOC_DIR to work with. If only_check_woo is True, only folders containing "WoogleDumps" in their names will be shown.'''
+def get_content_folder_name() -> str:
+    '''Select a folder from the DOC_DIR to work with.'''
     path = settings.DOC_DIR
-    if only_check_woo:
-        # Look for folders containing "woogle_dump" in their names
-        content_folder_names = [folder for folder in os.listdir(path) if os.path.isdir(os.path.join(path, folder)) and "WoogleDumps" in folder]
-    else:
-        content_folder_names = [folder for folder in os.listdir(path) if os.path.isdir(os.path.join(path, folder))]
+    content_folder_names = [folder for folder in os.listdir(path) if os.path.isdir(os.path.join(path, folder))]
     print(f"Available folders in {path}:")
     for idx, folder in enumerate(content_folder_names, start=1):
         print(f"{idx}. {folder}")

@@ -139,19 +139,10 @@ def handle_query(my_querier, my_prompt: str):
                 retrieval_method_info = f' , retrieval method: {document.metadata.get("retrieval_method")}' if document.metadata.get("retrieval_method") else ""
                 if index != 0:
                     st.markdown("---")
-                if settings.DATA_TYPE == "woo":
-                    document_link = f', document: [link]({document.metadata["documents_dc_source"]})' if document.metadata.get("documents_dc_source") else ""
-                    dossier_link = f', source: [link](https://pid.wooverheid.nl/?pid={document.metadata["foi_dossierId"]})' if document.metadata.get("foi_dossierId") else ""
-                    st.markdown(f'''**Document id: {document.metadata['foi_documentId']},
-                                page: {document.metadata['page_number']},
-                                chunk: {document.metadata['chunk']},
-                                dossier: {document.metadata['dossiers_dc_title']},
-                                score: {score:.4f}{retrieval_method_info}{document_link}{dossier_link}**''')
-                else:
-                    st.markdown(f'''**page: {document.metadata['page_number']},
-                                chunk: {document.metadata['chunk']},
-                                file: {document.metadata['filename']}
-                                score: {score:.4f}{retrieval_method_info}**''')
+                st.markdown(f'''**page: {document.metadata['page_number']},
+                            chunk: {document.metadata['chunk']},
+                            file: {document.metadata['filename']}
+                            score: {score:.4f}{retrieval_method_info}**''')
                 st.markdown(f"{document.page_content}")
     else:
         logger.info("No source documents found relating to the question")

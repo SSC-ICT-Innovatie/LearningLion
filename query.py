@@ -11,7 +11,7 @@ def main():
     querier = Querier()
     # Get source folder with docs from user
     # content_folder_name = input("Source folder of documents (without path): ")
-    content_folder_name = ut.get_content_folder_name(only_check_woo=settings.DATA_TYPE)
+    content_folder_name = ut.get_content_folder_name()
     # get associated vectordb path
     _, vectordb_folder_path = ut.create_vectordb_name(content_folder_name)
 

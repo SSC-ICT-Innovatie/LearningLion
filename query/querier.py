@@ -152,9 +152,6 @@ class Querier:
         SYSTEM_PROMPT = settings.SYSTEM_PROMPT
         documents = self.get_documents_with_scores(question)
         
-        if settings.GENERATION_METHOD == "document_only":
-            return {"source_documents": documents}
-        
         if settings.RETRIEVAL_METHOD == "answer_and_question":
             # Uses the custom chain
             response = self.chain.invoke({"question": f"{SYSTEM_PROMPT} {question}", "chat_history": self.chat_history}, custom_documents=documents)

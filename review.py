@@ -53,7 +53,7 @@ def main() -> None:
     Main loop of this module
     '''
     # Get source folder with papers from user
-    content_folder_name = ut.get_content_folder_name(only_check_woo=settings.DATA_TYPE == "woo")
+    content_folder_name = ut.get_content_folder_name()
 
     # get associated vectordb path
     content_folder_path, vectordb_folder_path = ut.create_vectordb_name(content_folder_name)

@@ -9,7 +9,7 @@ def main():
         Creates an instance of Ingester class and ingests documents when necessary
     '''
     # Get source folder with docs from user
-    content_folder_name = utils.get_content_folder_name(only_check_woo=settings.DATA_TYPE == "woo")
+    content_folder_name = utils.get_content_folder_name()
     
     # get associated source folder path and vectordb path
     content_folder_path, vectordb_folder_path = utils.create_vectordb_name(content_folder_name)

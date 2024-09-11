@@ -14,7 +14,7 @@ def main():
     Main function enabling summarization
     """
     # Get source folder with docs from user
-    content_folder_name = utils.get_content_folder_name(only_check_woo=settings.DATA_TYPE == "woo")
+    content_folder_name = utils.get_content_folder_name()
 
     # choose way of summarizing
     summarization_method = input("Summarization Method [Map_Reduce, Refine]: ")

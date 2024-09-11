@@ -7,9 +7,6 @@ APP_INFO = "./info/explanation.txt"
 # header in Streamlit UI, e.g. "ChatNMDC: chat with your documents"
 APP_HEADER = "SSC-ICT RAG demo"
 
-# must be "woo", if working with the Woo dataset. Otherwise it will use the default ingester.
-DATA_TYPE = ""
-
 # relative filepath of folder with input documents, e.g. "./docs"
 DOC_DIR = "./docs"
 
@@ -100,12 +97,8 @@ CHUNK_OVERLAP = 256
 # RETRIEVAL_METHOD must be one of "regular" or "answer_and_question"
 # "regular" use the similarity search only based on the question
 # "answer_and_question" use the similarity search based on the question and the answer and combines these
-RETRIEVAL_METHOD = "answer_and_question"
-
-# GENERATION METHOD must be one of "regular" or "document_only"
-# "regular" will use an LLM to generate an answer based on the question and the retrieved chunks
-# "document_only" will show the retrieved chunks
-GENERATION_METHOD = "regular"
+# The setting "answer_and_question" is based on the literature of the paper https://arxiv.org/abs/2212.10496
+RETRIEVAL_METHOD = "regular"
 
 # This is a standard set of instructions the LLM will be given. You can update this through trial and erorr to fir your use case in the most optimal way.
 SYSTEM_PROMPT = """
