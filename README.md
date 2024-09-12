@@ -1,11 +1,11 @@
-# LearningLion
+# LearningLion - Kamervragen
 This is the English version of the LearningLion project for the Dutch version see: https://github.com/JitseGoutbeek/LerendeLeeuw
 
 ## Description of the project
 The project is a study on the use of generative AI to improve the services of SSC-ICT by supporting employees and optimizing internal processes. In particular, the focus is on generative large language models (LLM), in the form of Retrieval Augmented Generation (RAG), because they can have the most significant impact on the daily work of SSC-ICT employees. The assignment (Speech Recognition & AI) has been approved by the SpB and has been running since the beginning of 2023. 
 
 ## Repository
-The current repository is based on the repository made by PBL under the direction of Stefan Troost (https://github.com/pbl-nl/appl-docchat), changed for our specific use cases. The demo is an example of Retrieval Augmented Generation (RAG) and allows for the use and evaluation of both Open and Closed-Source LLM's. It makes use of Langchain, Chroma and Streamlit among other things to perform document Q&A. Right now it is mostly a clone with some additions (to make running it locally easier for example) and it contains additional project documents (in project_docs) that provide background information about this project, the decisions we made and the research we conducted. 
+The current repository is based on the repository made by PBL under the direction of Stefan Troost (https://github.com/pbl-nl/appl-docchat), changed for our specific use case. The demo is an example of Retrieval Augmented Generation (RAG) and allows for the use and evaluation of both Open and Closed-Source LLM's. It makes use of Langchain, Chroma and Streamlit among other things to perform document Q&A. Right now it is mostly a clone with some additions (to make running it locally easier for example) and it contains additional project documents (in project_docs) that provide background information about this project, the decisions we made and the research we conducted. 
 
 A schematic overview of how the application works is shown here:
 
