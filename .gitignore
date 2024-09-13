@@ -155,3 +155,4 @@ test.ipynb
 
 # Powershell scripts
 *.ps1
+.DS_Store
