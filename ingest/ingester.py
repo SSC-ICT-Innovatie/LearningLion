@@ -102,7 +102,10 @@ class Ingester:
                 # determine updated maximum id from collection after deletions
                 collection = vector_store.get()  # dict_keys(['ids', 'embeddings', 'documents', 'metadatas'])
                 collection_ids = [int(id) for id in collection['ids']]
-                start_id = max(collection_ids) + 1
+                if (collection_ids == []):
+                    start_id = 1
+                else:
+                    start_id = max(collection_ids) + 1
             # else it needs to be created first
             else:
                 logger.info(f"Vector store to be created for folder {self.content_folder}")
@@ -120,6 +123,7 @@ class Ingester:
                     file_path = os.path.join(self.content_folder, file)
                     # extract raw text pages and metadata according to file type
                     raw_pages, metadata = file_parser.parse_file(file_path)
+                    metadata['filename'] = self.strip_file_path(file_path)
                     # convert the raw text to cleaned text chunks
                     documents = ingestutils.clean_text_to_docs(raw_pages, metadata)
                     logger.info(f"Extracted {len(documents)} chunks from {file}")
@@ -140,3 +144,9 @@ class Ingester:
 
             # save updated vector store to disk
             vector_store.persist()
+
+    def strip_file_path(self, file_path: str) -> str:
+        """
+        Strips the file path to the filename
+        """
+        return os.path.basename(file_path)

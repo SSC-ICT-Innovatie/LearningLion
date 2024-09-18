@@ -20,21 +20,9 @@ class LLM():
             if azureopenai_api_version is None and settings.AZUREOPENAI_API_VERSION is not None \
             else azureopenai_api_version
 
-        # if llm_type is "chatopenai"
-        if self.llm_type == "chatopenai":
-            # default llm_model_type value is "gpt-3.5-turbo"
-            self.llm_model_type = "gpt-3.5-turbo"
-            if self.llm_model_type == "gpt35_16":
-                self.llm_model_type = "gpt-3.5-turbo-16k"
-            elif self.llm_model_type == "gpt4":
-                self.llm_model_type = "gpt-4"
-            self.llm = ChatOpenAI(
-                client=None,
-                model=self.llm_model_type,
-                temperature=0,
-            )
+
         # else, if llm_type is "huggingface"
-        elif self.llm_type == "huggingface":
+        if self.llm_type == "huggingface":
             # default value is llama-2, with maximum output length 512
             self.llm_model_type = "meta-llama/Llama-2-7b-chat-hf"
             max_length = 512
@@ -61,17 +49,6 @@ class LLM():
                     model=self.llm_model_type,
                     callback_manager=CallbackManager([StreamingStdOutCallbackHandler()])
                 )
-            logger.info("Retrieved " + self.llm_model_type)
-
-        # else, if llm_type is "azureopenai"
-        elif self.llm_type == "azureopenai":
-            logger.info("Use Azure OpenAI LLM")
-            logger.info("Retrieving " + self.llm_model_type)
-            self.llm = AzureChatOpenAI(
-                azure_deployment=self.llm_model_type,
-                azure_endpoint=self.local_api_url,
-                api_version=self.azureopenai_api_version,
-            )
             logger.info("Retrieved " + self.llm_model_type)
 
     def get_llm(self):
