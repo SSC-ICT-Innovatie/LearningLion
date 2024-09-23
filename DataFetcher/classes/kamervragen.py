@@ -9,7 +9,7 @@ from typing import List
 import mimetypes
 
 class KamerVragen(dataSource):
-    url = "https://gegevensmagazijn.tweedekamer.nl/OData/v4/2.0/Document?$filter=Verwijderd eq false"
+    url = "https://gegevensmagazijn.tweedekamer.nl/OData/v4/2.0/Document?$filter=Verwijderd eq false and Soort eq 'Antwoord schriftelijke vragen'"
     downloadurlTemplate = "https://gegevensmagazijn.tweedekamer.nl/OData/v4/2.0/Document({0})/resource"
     limit: int
     targetfolder = "kamervragen_files"
@@ -153,7 +153,7 @@ class KamerVragen(dataSource):
         return self.totalItems
 
 
-    def getAllTypes(self, url=None, downloadFiles=False):
+    def getAllTypes(self, url=None, downloadFiles=False, downloadTypes=None):
         """Fetch all types of Kamervragen and download the files"""
         if url is None:
             url = self.url
@@ -170,10 +170,12 @@ class KamerVragen(dataSource):
                     dataitem = self._fetchKamerVragenData(rawItem, False)
                     if self.soorten.get(dataitem.soort) is None:
                         self.soorten[dataitem.soort] = 1
-                        if downloadFiles:
+                        if downloadFiles or (downloadTypes and dataitem.soort in downloadTypes):
                             self.fetchFile(dataitem.id, "{}/".format(self.targetfolder) + dataitem.soort.replace("/", "-"))
                     else:
                         self.soorten[dataitem.soort] += 1
+                    if (downloadTypes and dataitem.soort in downloadTypes):
+                            self.fetchFile(dataitem.id, "{}/".format(self.targetfolder) + dataitem.soort.replace("/", "-"))
 
                 url = rawData.get('@odata.nextLink')
                 pagenumber += 1
