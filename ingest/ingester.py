@@ -4,6 +4,7 @@ Creates Ingester object
 Also parses files, chunks the files and stores the chunks in vector store
 When instantiating without parameters, attributes get values from settings.py
 """
+from enum import Enum
 import os
 from typing import Tuple, List
 import re
@@ -20,6 +21,11 @@ import utils as ut
 import pandas as pd
 import numpy as np
 
+class IngestionMode(Enum):
+    default = 1
+    question_answer_per_page = 2
+    introduction = 3
+    question_answer = 4
 
 class Ingester:
     """
@@ -96,7 +102,7 @@ class Ingester:
 
         return [questions, answers]
 
-    def ingest(self) -> None:
+    def ingest(self, mode:IngestionMode = IngestionMode.default, forceRebuild:bool = false, addedMetaDataURLCSV:str = "") -> None:
         """
         Creates file parser object and ingestutils object and iterates over all files in the folder
         Checks are done whether vector store needs to be synchronized with folder contents
@@ -112,11 +118,12 @@ class Ingester:
 
         # create empty list representing added files
         new_files = []
-
+        
         if self.vecdb_type == "chromadb":
             # get all relevant files in the folder
             files_in_folder = [f for f in os.listdir(self.content_folder)
                                if os.path.isfile(os.path.join(self.content_folder, f))]
+            # Get the files that are supported
             relevant_files_in_folder = []
             for file in files_in_folder:
                 # file_path = os.path.join(self.content_folder, file)
@@ -127,7 +134,7 @@ class Ingester:
                     logger.info(f"Skipping ingestion of file {file} because it has extension {file[-4:]}")
 
             # if the vector store already exists, get the set of ingested files from the vector store
-            if os.path.exists(self.vectordb_folder):
+            if os.path.exists(self.vectordb_folder) and forceRebuild == False:
                 # get chroma vector store
                 vector_store = ut.get_chroma_vector_store(self.collection_name, embeddings, self.vectordb_folder)
                 logger.info(f"Vector store already exists for specified settings and folder {self.content_folder}")
@@ -153,33 +160,68 @@ class Ingester:
                 # determine updated maximum id from collection after deletions
                 collection = vector_store.get()  # dict_keys(['ids', 'embeddings', 'documents', 'metadatas'])
                 collection_ids = [int(id) for id in collection['ids']]
-                start_id = max(collection_ids) + 1
-            # else it needs to be created first
+                if (collection_ids == []):
+                        start_id = 1
+                else:
+                        start_id = max(collection_ids) + 1
+            # Create vector store
             else:
                 logger.info(f"Vector store to be created for folder {self.content_folder}")
-                # get chroma vector store
                 vector_store = ut.get_chroma_vector_store(self.collection_name, embeddings, self.vectordb_folder)
                 collection = vector_store.get()  # dict_keys(['ids', 'embeddings', 'documents', 'metadatas'])
-                # all files in the folder are to be ingested into the vector store
                 new_files = list(relevant_files_in_folder)
                 start_id = 0
+                
+            if(forceRebuild):
+                vector_store.delete_collection()
+                vector_store = ut.get_chroma_vector_store(self.collection_name, embeddings, self.vectordb_folder)
+                
 
             # If there are any files to be ingested into the vector store
             if len(new_files) > 0:
                 logger.info(f"Files are added, so vector store for {self.content_folder} needs to be updated")
                 for file in new_files:
                     file_path = os.path.join(self.content_folder, file)
-                    # extract raw text pages and metadata according to file type
+                    
+                    df = pd.read_csv(addedMetaDataURLCSV)
+                    
+                    search_id = self.strip_file_path(file_path)
+                    search_id = search_id.replace(".pdf", "")
+                    
+                    result = df[df['id'] == search_id]
                     raw_pages, metadata = file_parser.parse_file(file_path)
                     metadata['filename'] = self.strip_file_path(file_path)
+                    
+                    if not result.empty:
+                        logger.info(f"Data found for id {search_id}:")
+                        metadata['Title'] = result['Title'].values[0]
+                        metadata['Subject'] = result['Subject'].values[0]
+                        metadata['Source'] = result['Source'].values[0]
+                        
+                    else:
+                        logger.info(f"No data found for id {search_id}.")
+                    
+                    # extract raw text pages and metadata according to file type
                     # convert the raw text to cleaned text chunks
                     documents = ingestutils.clean_text_to_docs(raw_pages, metadata)
                     logger.info(f"Extracted {len(documents)} chunks from {file}")
                     # and add the chunks to the vector store
                     # add id to file chunks for later identification
-                    if(documents != []):
-                        combined_text = ''.join([doc.page_content for doc in documents])
-                        self.get_question_and_answer(combined_text)
+                    if(documents == []):
+                        raise Exception("No documents found")
+                    if mode == IngestionMode.question_answer_per_page:
+                            for doc in documents:
+                                questions, answers = self.get_question_and_answer(doc.page_content)
+                                doc.page_content = f"{' '.join(questions)} {' '.join(answers)}"
+                    if mode == IngestionMode.question_answer:
+                            questions, answers = self.get_question_and_answer(documents[0].page_content)
+                            documents[0].page_content = f"{' '.join(questions)} {' '.join(answers)}"
+                            documents = documents[:1]
+                    if mode == IngestionMode.introduction:
+                            documents[0].page_content = documents[0].page_content.split("vraag")[0]
+                            # drop other documents
+                            documents = documents[:1]
+                                
                     vector_store.add_documents(
                         documents=documents,
                         embedding=embeddings,
@@ -190,7 +232,11 @@ class Ingester:
                     # dict_keys(['ids', 'embeddings', 'documents', 'metadatas'])
                     collection = vector_store.get()
                     collection_ids = [int(id) for id in collection['ids']]
-                    start_id = max(collection_ids) + 1
+                    if (collection_ids == []):
+                        start_id = 1
+                    else:
+                        start_id = max(collection_ids) + 1
+
                 logger.info("Added files to vectorstore")
 
             # save updated vector store to disk

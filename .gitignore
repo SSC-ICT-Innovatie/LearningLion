@@ -151,8 +151,10 @@ dmypy.json
 .pyre/
 
 # Test Environment
-test.ipynb
+# test.ipynb
 
 # Powershell scripts
 *.ps1
 .DS_Store
+
+docs

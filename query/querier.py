@@ -1,3 +1,4 @@
+from enum import Enum
 from dotenv import load_dotenv
 from typing import Dict, Tuple, List, Any
 from langchain_core.documents import Document
@@ -11,6 +12,13 @@ import utils as ut
 from llm_class.llm_class import LLM
 from langchain.prompts import PromptTemplate
 
+
+class EnumMode(Enum):
+    answer_and_question = 1
+    regular = 2
+    none = 3
+    source = 4
+    metadata = 5
 
 class Querier:
     '''
@@ -144,17 +152,26 @@ class Querier:
                 unique_documents[document.page_content] = (document, score)
         return sorted(unique_documents.values(), key=lambda x: x[1], reverse=True)
 
-    def ask_question(self, question: str) -> Tuple[Dict[str, Any], List[float]]:
+    def ask_question(self, question: str, mode: EnumMode, system_prompt_override) -> Tuple[Dict[str, Any], List[float]]:
         """"
         Finds most similar docs to prompt in vectorstore and determines the response
         If the closest doc found is not similar enough to the prompt, any answer from the LM is overruled by a message
         """
-        SYSTEM_PROMPT = settings.SYSTEM_PROMPT
+        if system_prompt_override is not None:
+            SYSTEM_PROMPT = system_prompt_override
+        else:
+            SYSTEM_PROMPT = settings.SYSTEM_PROMPT
         documents = self.get_documents_with_scores(question)
+        print(f"Documents: {documents[0][0].metadata}")
         
-        if settings.RETRIEVAL_METHOD == "answer_and_question":
+        if settings.RETRIEVAL_METHOD == "answer_and_question" or mode == EnumMode.answer_and_question:
             # Uses the custom chain
             response = self.chain.invoke({"question": f"{SYSTEM_PROMPT} {question}", "chat_history": self.chat_history}, custom_documents=documents)
+            
+        elif(mode == EnumMode.source):
+            response = self.chain.invoke({"question": f"{SYSTEM_PROMPT} {question}", "chat_history": self.chat_history, "source_document": documents[0].metadata["source_document"]})
+        elif(mode == EnumMode.metadata):
+            response = self.chain.invoke({"question": f"{SYSTEM_PROMPT} {question}", "chat_history": self.chat_history, "metadata": documents[0][0].metadata})
         else:
             # Uses the regular Langchain chain
             response = self.chain.invoke({"question": f"{SYSTEM_PROMPT} {question}", "chat_history": self.chat_history})
@@ -179,3 +196,4 @@ class Querier:
         Used by "Clear Conversation" button in streamlit_app.py  
         """
         self.chat_history = []
+
