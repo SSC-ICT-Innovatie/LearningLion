@@ -30,7 +30,6 @@ def remove_multiple_newlines(text: str) -> str:
     """
     return re.sub(r"\n{2,}", "\n", text)
 
-
 def clean_text(pages: List[Tuple[int, str]], cleaning_functions: List[Callable[[str], str]]) -> List[Tuple[int, str]]:
     """
     Apply the cleaning functions to the text of each page.
@@ -122,6 +121,7 @@ def main():
         file_path = os.path.join(content_folder_path, file)
         raw_pages, _ = file_parser.parse_file(file_path)
         cleaned_pages = clean_pages(raw_pages)
+        get_question_and_answer(cleaned_pages)
         create_chunks_RCT(content_folder_name, cleaned_pages)
         create_chunks_NLTK(content_folder_name, cleaned_pages)
 

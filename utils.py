@@ -104,9 +104,12 @@ def get_timestamp():
     return str(dt.datetime.now())
 
 
-def get_content_folder_name() -> str:
+def get_content_folder_name(docdiroveride = None) -> str:
     '''Select a folder from the DOC_DIR to work with.'''
-    path = settings.DOC_DIR
+    if docdiroveride is None:
+        path = settings.DOC_DIR
+    elif docdiroveride is not None:
+        path = docdiroveride
     content_folder_names = [folder for folder in os.listdir(path) if os.path.isdir(os.path.join(path, folder))]
     print(f"Available folders in {path}:")
     for idx, folder in enumerate(content_folder_names, start=1):
