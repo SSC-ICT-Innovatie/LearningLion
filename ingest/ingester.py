@@ -12,6 +12,8 @@ from dotenv import load_dotenv
 from loguru import logger
 from sympy import false
 
+from langchain_text_splitters import NLTKTextSplitter
+
 # local imports
 import settings
 # from ingest.content_iterator import ContentIterator
@@ -26,6 +28,9 @@ class IngestionMode(Enum):
     question_answer_per_page = 2
     introduction = 3
     question_answer = 4
+    token_small = 5
+    token_medium = 6
+    token_large = 7
 
 class Ingester:
     """
@@ -203,7 +208,28 @@ class Ingester:
                     
                     # extract raw text pages and metadata according to file type
                     # convert the raw text to cleaned text chunks
-                    documents = ingestutils.clean_text_to_docs(raw_pages, metadata)
+                    tokenSize = 0
+                    
+                    if mode == IngestionMode.token_small:
+                        tokenSize = 1000
+                    elif mode == IngestionMode.token_medium:
+                        tokenSize = 10000
+                    elif mode == IngestionMode.token_large:
+                        tokenSize = 100000
+                    
+                    if mode == IngestionMode.token_small or mode == IngestionMode.token_medium or mode == IngestionMode.token_large:
+                        newRaw = []
+                        for raw in raw_pages:
+                            splitted = NLTKTextSplitter(chunk_size=tokenSize)
+                            texts = splitted.split_text(raw[1])
+                            # newRaw.extend([(len(newRaw) + i for i in texts)])
+                            for text in texts:
+                                newRaw.append((len(newRaw) + 1, text))
+                        documents = ingestutils.clean_text_to_docs(newRaw, metadata)
+
+                    else:
+                        documents = ingestutils.clean_text_to_docs(raw_pages, metadata)
+                        
                     logger.info(f"Extracted {len(documents)} chunks from {file}")
                     # and add the chunks to the vector store
                     # add id to file chunks for later identification
@@ -221,6 +247,7 @@ class Ingester:
                             documents[0].page_content = documents[0].page_content.split("vraag")[0]
                             # drop other documents
                             documents = documents[:1]
+                            
                                 
                     vector_store.add_documents(
                         documents=documents,

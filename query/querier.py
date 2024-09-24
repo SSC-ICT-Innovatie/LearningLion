@@ -169,7 +169,7 @@ class Querier:
             response = self.chain.invoke({"question": f"{SYSTEM_PROMPT} {question}", "chat_history": self.chat_history}, custom_documents=documents)
             
         elif(mode == EnumMode.source):
-            response = self.chain.invoke({"question": f"{SYSTEM_PROMPT} {question}", "chat_history": self.chat_history, "source_document": documents[0].metadata["source_document"]})
+            response = self.chain.invoke({"question": f"{SYSTEM_PROMPT} {question}", "chat_history": self.chat_history})
         elif(mode == EnumMode.metadata):
             response = self.chain.invoke({"question": f"{SYSTEM_PROMPT} {question}", "chat_history": self.chat_history, "metadata": documents[0][0].metadata})
         else:
