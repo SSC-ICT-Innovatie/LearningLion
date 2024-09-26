@@ -80,14 +80,12 @@ class Ingester:
 
 
     def get_question_and_answer(self, text):
-
         footnotes = self.extract_footnotes(text)
         footer = self.get_footer(text)
         pages = self.get_amount_of_pages(text,footer)
         text = self.remove_footer_and_pagenumbers(text,footer,pages)
         docspecs = self.get_doc_specs(text)
         text = text.replace(docspecs, "")
-        textLen = len(text)
         text = self.normalize_whitespace(text)
         question_pattern = r"(Vraag\s\d+.*?)(?=\s*Antwoord)"
         answer_pattern = r"(Antwoord\s\d+.*?)(?=Vraag|\Z)"
@@ -245,7 +243,6 @@ class Ingester:
                             documents = documents[:1]
                     if mode == IngestionMode.introduction:
                             documents[0].page_content = documents[0].page_content.split("vraag")[0]
-                            # drop other documents
                             documents = documents[:1]
                             
                                 
@@ -304,7 +301,6 @@ class Ingester:
             strings_with_numbers.append(footnote_number)
             strings_with_numbers.append(footnote_text)
         # Now footnotes will contain the extracted pairs
-        print(strings_with_numbers)
 
         footnote_index = 0
         pages = []
@@ -315,7 +311,6 @@ class Ingester:
                 continue
             # Check if 's-Gravenhage 2014 is in the string
             if '’s-Gravenhage' in string:
-                print(string)
                 # If found, add the current page to pages
                 pages.append(current_page)
                 # Reset current_page for the next page

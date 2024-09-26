@@ -6,8 +6,12 @@ from langchain_community.vectorstores.chroma import Chroma
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.embeddings import OllamaEmbeddings
 from langchain_openai import OpenAIEmbeddings, AzureOpenAIEmbeddings
+import torch
+import weaviate
+
 # local imports
 import settings
+
 
 
 def create_vectordb_name(content_folder_name, chunk_size=None, chunk_overlap=None):
@@ -36,12 +40,20 @@ def getattr_or_default(obj, attr, default=None):
 
 
 def get_chroma_vector_store(collection_name, embeddings, vectordb_folder):
-    vector_store = Chroma(
-        collection_name=collection_name,
-        embedding_function=embeddings,
-        persist_directory=vectordb_folder,
-        collection_metadata={"hnsw:space": "cosine"}
-    )
+    
+    if settings.VECDB_TYPE == "chromadb":
+        vector_store = Chroma(
+            collection_name=collection_name,
+            embedding_function=embeddings,
+            persist_directory=vectordb_folder,
+            collection_metadata={"hnsw:space": "cosine"}
+        )
+    # if settings.VECDB_TYPE == "weaviate":
+        # vector_store = Weaviate(
+        #     collection_name=collection_name,
+        #     embedding_function=embeddings,
+        #     persist_directory=vectordb_folder,
+        #     collection_metadata={"hnsw:space": "cosine"}
     return vector_store
 
 
@@ -82,7 +94,12 @@ def getEmbeddings(embeddings_provider, embeddings_model, local_api_url, azureope
         embeddings = HuggingFaceEmbeddings(model_name=embeddings_model)
     elif embeddings_provider == "local_embeddings":
         model_name = embeddings_model
-        model_kwargs = {'device': 'cpu'}
+        if torch.backends.mps.is_available():
+            model_kwargs = {'device': 'mps'}
+        elif torch.cuda.is_available():
+            model_kwargs = {'device': 'cuda'}
+        else:
+            model_kwargs = {'device': 'cpu'}
         encode_kwargs = {'normalize_embeddings': False}
         embeddings = HuggingFaceEmbeddings(
             model_name=model_name,
