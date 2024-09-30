@@ -78,7 +78,6 @@ class Ingester:
                 footer.append(split)
         return ""
 
-
     def get_question_and_answer(self, text):
         footnotes = self.extract_footnotes(text)
         footer = self.get_footer(text)
@@ -105,7 +104,7 @@ class Ingester:
 
         return [questions, answers]
 
-    def ingest(self, mode:IngestionMode = IngestionMode.default, forceRebuild:bool = false, addedMetaDataURLCSV:str = "") -> None:
+    def ingest(self, mode:IngestionMode = IngestionMode.default, forceRebuild:bool = false, addedMetaDataURLCSV:str = "", addContext=False) -> None:
         """
         Creates file parser object and ingestutils object and iterates over all files in the folder
         Checks are done whether vector store needs to be synchronized with folder contents
@@ -244,6 +243,11 @@ class Ingester:
                     if mode == IngestionMode.introduction:
                             documents[0].page_content = documents[0].page_content.split("vraag")[0]
                             documents = documents[:1]
+                    if addContext:
+                        introduction = documents[0].page_content.split("vraag")[0]
+                        for doc in documents:
+                            
+                            doc.page_content = f"{introduction} {doc.page_content}"
                             
                                 
                     vector_store.add_documents(

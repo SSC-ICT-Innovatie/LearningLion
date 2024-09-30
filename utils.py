@@ -39,7 +39,7 @@ def getattr_or_default(obj, attr, default=None):
     return value if value is not None else default
 
 
-def get_chroma_vector_store(collection_name, embeddings, vectordb_folder):
+def get_chroma_vector_store(collection_name, embeddings, vectordb_folder) -> Chroma:
     
     if settings.VECDB_TYPE == "chromadb":
         vector_store = Chroma(
