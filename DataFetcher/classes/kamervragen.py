@@ -13,7 +13,7 @@ from PyPDF2 import PdfWriter, PdfReader
 
 class KamerVragen(dataSource):
     url = "https://gegevensmagazijn.tweedekamer.nl/OData/v4/2.0/Document?$filter=Verwijderd eq false and Soort eq 'Antwoord schriftelijke vragen'"
-    urlLIMITED = "https://gegevensmagazijn.tweedekamer.nl/OData/v4/2.0/Document?$filter=Verwijderd eq false and Soort eq 'Antwoord schriftelijke vragen' and (year(DatumRegistratie) eq 2024 and month(DatumRegistratie) ge 1 and day(DatumRegistratie) ge 1) and (year(DatumRegistratie) eq 2024 and month(DatumRegistratie) lt 7)"
+    urlLIMITED = "https://gegevensmagazijn.tweedekamer.nl/OData/v4/2.0/Document?$filter=Verwijderd eq false and Soort eq 'Antwoord schriftelijke vragen' and (year(DatumRegistratie) eq 2024 and month(DatumRegistratie) ge 1 and day(DatumRegistratie) ge 1) and (year(DatumRegistratie) eq 2024 and month(DatumRegistratie) lt 9)"
     urlAfter2010 = "https://gegevensmagazijn.tweedekamer.nl/OData/v4/2.0/Document?$filter=Verwijderd eq false and Soort eq 'Antwoord schriftelijke vragen' and year(DatumRegistratie) gt 2010"
     downloadurlTemplate = "https://gegevensmagazijn.tweedekamer.nl/OData/v4/2.0/Document({0})/resource"
     documenturlTemplate = "https://gegevensmagazijn.tweedekamer.nl/OData/v4/2.0/Document({0})"
@@ -72,7 +72,7 @@ class KamerVragen(dataSource):
         """Fetch all data from the API. The limit parameter is used to limit the amount of items fetched can be go over the limit due to multithreading"""
         if(self.limit < 1):
             self.limitDisabled = True
-        response = requests.get(self.url)
+        response = requests.get(self.urlLIMITED)
         thread = None
         
         if(response.status_code == 200):
@@ -192,7 +192,7 @@ class KamerVragen(dataSource):
         
     def getTotalItemsInApi(self):
         """Fetch the total number of items in the API"""
-        url = self.url
+        url = self.urlLIMITED
         while url:
             response = requests.get(url)
             if response.status_code == 200:
@@ -213,7 +213,7 @@ class KamerVragen(dataSource):
     def getAllTypes(self, url=None, downloadFiles=False, downloadTypes=None):
         """Fetch all types of Kamervragen and download the files"""
         if url is None:
-            url = self.urlAfter2010
+            url = self.urlLIMITED
         pagenumber = 1
 
         while url:

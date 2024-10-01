@@ -13,7 +13,7 @@ import weaviate
 import settings
 
 def create_vectordb_name(content_folder_name, chunk_size=None, chunk_overlap=None, embeddings_type=None, embeddings_model=None, vecdb_type=None, added_context=None, splitting_method=None):
-    # FORMAT OF VECTORDB NAME: VECDB_TYPE_chunk_size_chunk_overlap_EMBEDDINGS_PROVIDER_EMBEDDINGS_MODEL_ADDED_CONTEXT_EMBEDDINGSTYPE_VECDB_TYPE
+    # FORMAT OF VECTORDB NAME: VECDB_TYPE_chunk_size_chunk_overlap_EMBEDDINGS_PROVIDER_EMBEDDINGS_MODEL_ADDED_CONTEXT_EMBEDDINGSTYPE_VECDB_TYPE_SPLITTING_METHOD
     templateVectorname = "VECDBTYPE_chunksize_chunkoverlap_EMBEDDINGS_PROVIDER_EMBEDDINGS_MODEL_ADDED_CONTEXT_EMBEDDINGSTYPE_VECDB_TYPE_SPLITTING_METHOD"
     content_folder_path = os.path.join(settings.DOC_DIR, content_folder_name)
     
