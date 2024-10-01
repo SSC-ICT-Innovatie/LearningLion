@@ -182,7 +182,7 @@ class Ingester:
             # If there are any files to be ingested into the vector store
             if len(new_files) > 0:
                 logger.info(f"Files are added, so vector store for {self.content_folder} needs to be updated")
-                for file in new_files:
+                for index, file in new_files:
                     file_path = os.path.join(self.content_folder, file)
                     
                     df = pd.read_csv(addedMetaDataURLCSV)
@@ -228,6 +228,10 @@ class Ingester:
                         documents = ingestutils.clean_text_to_docs(raw_pages, metadata)
                         
                     logger.info(f"Extracted {len(documents)} chunks from {file}")
+                    
+                    logger.info(f"File numer {index} of {len(new_files)}")
+                    logger.info(f"Progrssion: {index / len(new_files) * 100}%")
+                    
                     # and add the chunks to the vector store
                     # add id to file chunks for later identification
                     if(documents == []):
