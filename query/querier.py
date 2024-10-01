@@ -127,6 +127,9 @@ class Querier:
         
     def get_documents_with_scores(self, question: str) -> List[Tuple[Document, float]]:
         most_similar_docs = self.vector_store.similarity_search_with_relevance_scores(question, k=self.chunk_k)
+        if(len(most_similar_docs) == 0):
+            logger.info("No similar docs found")
+            return most_similar_docs
         logger.info(f"Topscore most similar docs: {most_similar_docs[0][1]}")
         
         if settings.RETRIEVAL_METHOD == "regular":

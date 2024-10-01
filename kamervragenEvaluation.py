@@ -18,6 +18,9 @@ def test_retrival_singular(question: str, source_doc, querier: Querier) -> None:
     Test the retrieval of the documents
     """
     documents = querier.get_documents_with_scores(question)
+    if(len(documents) <= 0):
+        logger.info("No documents found")
+        return False
     highest_score_document = documents[0]
     logger.info(f"Highest score: {highest_score_document[1]}")
     if(source_doc == highest_score_document[0].metadata['filename']):
@@ -66,7 +69,7 @@ def test_retrival(folder_path, ingester: Ingester, querier: Querier, toCSV: bool
             else:
                 total_files_checked_questions += 1
                 randomQuestion = questionsList[0]
-                if(len(randomQuestion) <= 0):
+                if(len(randomQuestion) < 0):
                     logger.info("No questions found in file")
                 else:
                     querier.get_documents_with_scores(randomQuestion[0])
