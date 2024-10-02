@@ -308,6 +308,10 @@ def create_evaluation_sample_questions(folder, ingester: Ingester, destinationCS
             if len(dataList) >= 100:
                 break
 
+            # Skip if the filename is not in randomsampleids
+            if filename not in randomsampleids:
+                continue
+
             # Skip if the filename is already in dataList (checked using the set)
             if filename in added_filenames:
                 continue
@@ -326,15 +330,14 @@ def create_evaluation_sample_questions(folder, ingester: Ingester, destinationCS
                 
                 questions, answers = ingester.get_question_and_answer(concats)
                 
-                if questions is None:
+                # Ensure questions list is not empty
+                if not questions or len(questions) == 0:
                     continue
-                
                 randomQuestion = random.choice(questions)
-                
                 if randomQuestion is not None:
                     data = {
                         'Filename': filename,
-                        'Question': randomQuestion if randomQuestion is not None else '',
+                        'Question': randomQuestion,
                     }
                     dataList.append(data)
                     added_filenames.add(filename)  # Add the filename to the set after adding to dataList
