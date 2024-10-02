@@ -183,7 +183,7 @@ class Ingester:
                 start_id = 0
                 
             if(forceRebuild):
-                if vector_store is not None and vector_store.__len__ != 0:
+                if vector_store is not None:
                     vector_store.delete_collection()
                 vector_store = ut.get_chroma_vector_store(self.collection_name, embeddings, self.vectordb_folder)
                 
