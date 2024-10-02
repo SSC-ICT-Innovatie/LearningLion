@@ -293,7 +293,7 @@ def get_random_sample_ids(folder, sample_size):
 def create_evaluation_sample_questions(folder,ingester: Ingester, destinationCSV:str):
     """Create a sample of questions to evaluate the retrieval"""
     file_parser = FileParser()
-    randomsampleids = get_random_sample_ids(folder, 10)
+    randomsampleids = get_random_sample_ids(folder, 100)
     dataList = []
     for filename in os.listdir(folder):
         if filename not in randomsampleids:
