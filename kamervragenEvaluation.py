@@ -290,29 +290,56 @@ def get_random_sample_ids(folder, sample_size):
         randomsampleids.append(random.choice(os.listdir(folder)))
     return randomsampleids
 
-def create_evaluation_sample_questions(folder,ingester: Ingester, destinationCSV:str):
+def create_evaluation_sample_questions(folder, ingester: Ingester, destinationCSV: str):
     """Create a sample of questions to evaluate the retrieval"""
     file_parser = FileParser()
     randomsampleids = get_random_sample_ids(folder, 100)
     dataList = []
-    for filename in os.listdir(folder):
-        if filename not in randomsampleids:
-            continue
-        if filename.endswith(".pdf"):
-            file_path = os.path.join(folder, filename)
-            raw_pages, metadata = file_parser.parse_file(file_path)
-            questions, answers = [], []
-            concats = ""
-            for doc in raw_pages:
-                concats += doc[1]
-            questions, answers = ingester.get_question_and_answer(concats)
-            randomQuestion = random.choice(questions)
-            if randomQuestion is not None:
-                data = {
-                    'Filename': filename,
-                    'Question': randomQuestion if randomQuestion is not None else '',
-                }
-                dataList.append(data)
+    
+    # Set to hold filenames already added to dataList
+    added_filenames = set()
+
+    while len(dataList) < 100:
+        # Pick random file if not enough samples
+        randomsampleids.append(random.choice(os.listdir(folder)))
+        
+        for filename in os.listdir(folder):
+            # Break loop if we've already collected 100 items
+            if len(dataList) >= 100:
+                break
+
+            # Skip if the filename is already in dataList (checked using the set)
+            if filename in added_filenames:
+                continue
+
+            if filename.endswith(".pdf"):
+                file_path = os.path.join(folder, filename)
+                raw_pages, metadata = file_parser.parse_file(file_path)
+                
+                if len(raw_pages) <= 0:
+                    continue
+                
+                # Concatenate all pages' content
+                concats = ""
+                for doc in raw_pages:
+                    concats += doc[1]
+                
+                questions, answers = ingester.get_question_and_answer(concats)
+                
+                if questions is None:
+                    continue
+                
+                randomQuestion = random.choice(questions)
+                
+                if randomQuestion is not None:
+                    data = {
+                        'Filename': filename,
+                        'Question': randomQuestion if randomQuestion is not None else '',
+                    }
+                    dataList.append(data)
+                    added_filenames.add(filename)  # Add the filename to the set after adding to dataList
+
+    # Write the data to CSV
     df = pd.DataFrame(dataList)
     df.to_csv(destinationCSV, index=False)
     print("done writing to csv")
