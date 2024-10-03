@@ -1,4 +1,5 @@
 import os
+import random
 from loguru import logger
 import pandas as pd
 from langchain_community.vectorstores.chroma import Chroma
@@ -18,6 +19,9 @@ def test_retrival_singular(question: str, source_doc, querier: Querier) -> None:
     Test the retrieval of the documents
     """
     documents = querier.get_documents_with_scores(question)
+    if(len(documents) <= 0):
+        logger.info("No documents found")
+        return False
     highest_score_document = documents[0]
     logger.info(f"Highest score: {highest_score_document[1]}")
     if(source_doc == highest_score_document[0].metadata['filename']):
@@ -66,7 +70,7 @@ def test_retrival(folder_path, ingester: Ingester, querier: Querier, toCSV: bool
             else:
                 total_files_checked_questions += 1
                 randomQuestion = questionsList[0]
-                if(len(randomQuestion) <= 0):
+                if(len(randomQuestion) < 0):
                     logger.info("No questions found in file")
                 else:
                     querier.get_documents_with_scores(randomQuestion[0])
@@ -278,5 +282,115 @@ def normilze_param_to_string(param):
     
     return param
         
-            
-            
+        
+def get_random_sample_ids(folder, sample_size):
+    """Get a sample of random ids from the folder"""
+    randomsampleids = []
+    for sample in range(sample_size):
+        randomsampleids.append(random.choice(os.listdir(folder)))
+    return randomsampleids
+
+def create_evaluation_sample_questions(folder, ingester: Ingester, destinationCSV: str):
+    """Create a sample of questions to evaluate the retrieval"""
+    file_parser = FileParser()
+    randomsampleids = get_random_sample_ids(folder, 100)
+    dataList = []
+    
+    # Set to hold filenames already added to dataList
+    added_filenames = set()
+
+    while len(dataList) < 100:
+        # Pick random file if not enough samples
+        randomsampleids.append(random.choice(os.listdir(folder)))
+        
+        for filename in os.listdir(folder):
+            # Break loop if we've already collected 100 items
+            if len(dataList) >= 100:
+                break
+
+            # Skip if the filename is not in randomsampleids
+            if filename not in randomsampleids:
+                continue
+
+            # Skip if the filename is already in dataList (checked using the set)
+            if filename in added_filenames:
+                continue
+
+            if filename.endswith(".pdf"):
+                file_path = os.path.join(folder, filename)
+                raw_pages, metadata = file_parser.parse_file(file_path)
+                
+                if len(raw_pages) <= 0:
+                    continue
+                
+                # Concatenate all pages' content
+                concats = ""
+                for doc in raw_pages:
+                    concats += doc[1]
+                
+                questions, answers = ingester.get_question_and_answer(concats)
+                
+                # Ensure questions list is not empty
+                if not questions or len(questions) == 0:
+                    continue
+                randomQuestion = random.choice(questions)
+                if randomQuestion is not None:
+                    data = {
+                        'Filename': filename,
+                        'Question': randomQuestion,
+                    }
+                    dataList.append(data)
+                    added_filenames.add(filename)  # Add the filename to the set after adding to dataList
+
+    # Write the data to CSV
+    df = pd.DataFrame(dataList)
+    df.to_csv(destinationCSV, index=False)
+    print("done writing to csv")
+    
+def evaluate_with_sample_questions(samplequestionsCSVPATH,querier: Querier, toCSV: bool = False, ingestionMode:IngestionMode = None, addedMetaDataURLCSV:str = None, addContext:bool = None, embeddings_model:str = None, text_splitter_method:str = None, embeddings_provider:str = None, database:str = None, concatFiles:bool = False):
+    """Evaluate the retrieval with the sample questions"""
+    df = pd.read_csv(samplequestionsCSVPATH)
+    correct_count = 0
+    for index, row in df.iterrows():
+        documents = querier.get_documents_with_scores(question=row['Question'])
+        if len(documents) > 0:
+            if documents[0][0].metadata['filename'] == row['Filename']:
+                correct_count += 1
+                
+                
+    print(f"Correct count: {correct_count}")
+    print(f"Total count: {len(df)}")
+    print(f"Percentage: {correct_count/len(df)*100}%")
+    print(f"Average precision: {correct_count/len(df)}")
+    
+    if toCSV:
+        print("writing to csv")
+        # Create a DataFrame with new data
+        new_data = pd.DataFrame({
+            "Total files checked with questions": [len(df)],
+            "Total files found with questions": [correct_count],
+            "Percentage found questions": [correct_count / len(df) * 100],
+            "Average precision questions": [correct_count / len(df)],
+            "ingestionMode": [ingestionMode],
+            "addedMetaDataURLCSV": [addedMetaDataURLCSV],
+            "addContext": [addContext],
+            "embeddings_model": [embeddings_model],
+            "text_splitter_method": [text_splitter_method],
+            "embeddings_provider": [embeddings_provider],
+            "database": [database],
+            "concatFiles": [concatFiles]
+        })
+        
+        # Check if the CSV file already exists
+        file_path = "results_test_retrival.csv"
+        if os.path.exists(file_path):
+            # If the file exists, read it and concatenate the new data
+            existing_data = pd.read_csv(file_path)
+            updated_data = pd.concat([existing_data, new_data], ignore_index=True)
+        else:
+            # If the file doesn't exist, the new data becomes the updated data
+            updated_data = new_data
+        
+        # Export the updated DataFrame to the CSV file
+        updated_data.to_csv(file_path, index=False)
+    print("done writing to csv")

@@ -109,8 +109,16 @@ class Ingester:
         Creates file parser object and ingestutils object and iterates over all files in the folder
         Checks are done whether vector store needs to be synchronized with folder contents
         """
+        chunk_size = self.chunk_size
+        if(mode == IngestionMode.token_small):
+            chunk_size = 128
+        elif(mode == IngestionMode.token_medium):
+            chunk_size = 512
+        elif(mode == IngestionMode.token_large):
+            chunk_size = 1024
+        
         file_parser = FileParser()
-        ingestutils = IngestUtils(self.chunk_size, self.chunk_overlap, self.file_no, self.text_splitter_method)
+        ingestutils = IngestUtils(chunk_size, 0, self.file_no, self.text_splitter_method)
 
         # get embeddings
         embeddings = ut.getEmbeddings(self.embeddings_provider,
@@ -175,14 +183,17 @@ class Ingester:
                 start_id = 0
                 
             if(forceRebuild):
-                vector_store.delete_collection()
+                if vector_store is not None:
+                    vector_store.delete_collection()
                 vector_store = ut.get_chroma_vector_store(self.collection_name, embeddings, self.vectordb_folder)
                 
 
             # If there are any files to be ingested into the vector store
             if len(new_files) > 0:
                 logger.info(f"Files are added, so vector store for {self.content_folder} needs to be updated")
+                index = 0
                 for file in new_files:
+                    index += 1
                     file_path = os.path.join(self.content_folder, file)
                     
                     df = pd.read_csv(addedMetaDataURLCSV)
@@ -192,6 +203,8 @@ class Ingester:
                     
                     result = df[df['id'] == search_id]
                     raw_pages, metadata = file_parser.parse_file(file_path)
+                        
+                    
                     metadata['filename'] = self.strip_file_path(file_path)
                     
                     if not result.empty:
@@ -204,20 +217,11 @@ class Ingester:
                         logger.info(f"No data found for id {search_id}.")
                     
                     # extract raw text pages and metadata according to file type
-                    # convert the raw text to cleaned text chunks
-                    tokenSize = 0
-                    
-                    if mode == IngestionMode.token_small:
-                        tokenSize = 1000
-                    elif mode == IngestionMode.token_medium:
-                        tokenSize = 10000
-                    elif mode == IngestionMode.token_large:
-                        tokenSize = 100000
-                    
+                    # convert the raw text to cleaned text chunks                    
                     if mode == IngestionMode.token_small or mode == IngestionMode.token_medium or mode == IngestionMode.token_large:
                         newRaw = []
                         for raw in raw_pages:
-                            splitted = NLTKTextSplitter(chunk_size=tokenSize)
+                            splitted = NLTKTextSplitter()
                             texts = splitted.split_text(raw[1])
                             # newRaw.extend([(len(newRaw) + i for i in texts)])
                             for text in texts:
@@ -228,6 +232,10 @@ class Ingester:
                         documents = ingestutils.clean_text_to_docs(raw_pages, metadata)
                         
                     logger.info(f"Extracted {len(documents)} chunks from {file}")
+                    
+                    logger.info(f"File numer {index} of {len(new_files)}")
+                    logger.info(f"Progrssion: {index / len(new_files) * 100}%")
+                    
                     # and add the chunks to the vector store
                     # add id to file chunks for later identification
                     if(documents == []):

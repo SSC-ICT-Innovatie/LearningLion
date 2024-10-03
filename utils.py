@@ -12,16 +12,24 @@ import weaviate
 # local imports
 import settings
 
-
-
-def create_vectordb_name(content_folder_name, chunk_size=None, chunk_overlap=None):
+def create_vectordb_name(content_folder_name, chunk_size=None, chunk_overlap=None, embeddings_type=None, embeddings_model=None, vecdb_type=None, added_context=None, splitting_method=None):
+    # FORMAT OF VECTORDB NAME: VECDB_TYPE_chunk_size_chunk_overlap_EMBEDDINGS_PROVIDER_EMBEDDINGS_MODEL_ADDED_CONTEXT_EMBEDDINGSTYPE_VECDB_TYPE_SPLITTING_METHOD
+    templateVectorname = "VECDBTYPE_chunksize_chunkoverlap_EMBEDDINGS_PROVIDER_EMBEDDINGS_MODEL_ADDED_CONTEXT_EMBEDDINGSTYPE_VECDB_TYPE_SPLITTING_METHOD"
     content_folder_path = os.path.join(settings.DOC_DIR, content_folder_name)
-    # vectordb_name is created from vecdb_type, chunk_size, chunk_overlap, embeddings_type 
+    
+    templateVectorname = templateVectorname.replace("VECDBTYPE", settings.VECDB_TYPE)
     if chunk_size:
-        vectordb_name = "_" + settings.VECDB_TYPE + "_" + str(chunk_size) + "_" + str(chunk_overlap) + "_" + settings.EMBEDDINGS_PROVIDER + "_" + settings.EMBEDDINGS_MODEL
+        templateVectorname = templateVectorname.replace("chunksize", str(chunk_size))
     else:
-        vectordb_name = "_" + settings.VECDB_TYPE + "_" + str(settings.CHUNK_SIZE) + "_" + str(settings.CHUNK_OVERLAP) + "_" + settings.EMBEDDINGS_PROVIDER + "_" + settings.EMBEDDINGS_MODEL
-    vectordb_folder_path = os.path.join(settings.VECDB_DIR, content_folder_name) + vectordb_name 
+        templateVectorname = templateVectorname.replace("chunksize", str(settings.CHUNK_SIZE))
+    templateVectorname = templateVectorname.replace("chunkoverlap", str(chunk_overlap))
+    templateVectorname = templateVectorname.replace("EMBEDDINGS_PROVIDER", settings.EMBEDDINGS_PROVIDER)
+    templateVectorname = templateVectorname.replace("EMBEDDINGS_MODEL", settings.EMBEDDINGS_MODEL)
+    templateVectorname = templateVectorname.replace("ADDED_CONTEXT", str(added_context))
+    templateVectorname = templateVectorname.replace("EMBEDDINGSTYPE", str(embeddings_type))
+    templateVectorname = templateVectorname.replace("SPLITTING_METHOD", str(splitting_method))
+    vectordb_folder_path = os.path.join(settings.VECDB_DIR, content_folder_name) + templateVectorname 
+    
     return content_folder_path, vectordb_folder_path
 
 
@@ -100,8 +108,10 @@ def getEmbeddings(embeddings_provider, embeddings_model, local_api_url, azureope
             model_kwargs = {'device': 'cuda'}
         else:
             model_kwargs = {'device': 'cpu'}
+        model_kwargs["trust_remote_code"] = True
         encode_kwargs = {'normalize_embeddings': False}
         embeddings = HuggingFaceEmbeddings(
+            
             model_name=model_name,
             model_kwargs=model_kwargs,
             encode_kwargs=encode_kwargs )
