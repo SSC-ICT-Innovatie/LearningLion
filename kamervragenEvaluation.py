@@ -392,7 +392,7 @@ def evaluate_with_sample_questions(samplequestionsCSVPATH,querier: Querier, toCS
     correct_count = 0
     for index, row in df.iterrows():
         question = f"{row['context']} {row['Question']}"
-        documents = querier.get_documents_with_scores(question=row['Question'])
+        documents = querier.get_documents_with_scores(question=question)
         if len(documents) > 0:
             if documents[0][0].metadata['filename'] == row['Filename']:
                 correct_count += 1
