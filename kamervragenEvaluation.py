@@ -386,7 +386,7 @@ def create_evaluation_sample_questions(folder, ingester: Ingester, destinationCS
     df.to_csv(destinationCSV, index=False)
     print("done writing to csv")
     
-def evaluate_with_sample_questions(samplequestionsCSVPATH,querier: Querier, toCSV: bool = False, ingestionMode:IngestionMode = None, addedMetaDataURLCSV:str = None, addContext:bool = None, embeddings_model:str = None, text_splitter_method:str = None, embeddings_provider:str = None, database:str = None, concatFiles:bool = False):
+def evaluate_with_sample_questions(samplequestionsCSVPATH,querier: Querier, toCSV: bool = False, ingestionMode:IngestionMode = None, addedMetaDataURLCSV:str = None, addContext:bool = None, embeddings_model:str = None, text_splitter_method:str = None, embeddings_provider:str = None, database:str = None, concatFiles:bool = False, selected_files_folder: str = None):
     """Evaluate the retrieval with the sample questions"""
     try:
         df = pd.read_csv(samplequestionsCSVPATH)
@@ -410,8 +410,15 @@ def evaluate_with_sample_questions(samplequestionsCSVPATH,querier: Querier, toCS
         
         if toCSV:
             print("writing to csv")
+            
+            filesInVectorStore = 0
+            if selected_files_folder is not None:
+                filesInVectorStore = len(os.listdir(selected_files_folder))
+            else:
+                filesInVectorStore = "Unknown"
             # Create a DataFrame with new data
             new_data = pd.DataFrame({
+                "Total files in vectorStore": [filesInVectorStore],
                 "Total files checked with questions": [len(df)],
                 "Total files found with questions": [correct_count],
                 "Percentage found questions": [correct_count / len(df) * 100],
