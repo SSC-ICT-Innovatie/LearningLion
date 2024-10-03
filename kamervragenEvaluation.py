@@ -6,8 +6,10 @@ from langchain_community.vectorstores.chroma import Chroma
 
 
 from ingest.file_parser import FileParser
+from ingest.ingest_utils import IngestUtils
 from ingest.ingester import Ingester, IngestionMode
 from query.querier import Querier
+from settings import CHUNK_SIZE, TEXT_SPLITTER_METHOD
 import utils as ut
 
 
@@ -298,6 +300,37 @@ def create_evaluation_sample_questions(folder, ingester: Ingester, destinationCS
     
     # Set to hold filenames already added to dataList
     added_filenames = set()
+    
+    if(os.path.exists(destinationCSV)):
+        print("CSV file already exists")
+        df = pd.read_csv(destinationCSV)
+        
+        # Check if context is missing
+        if 'context' not in df.columns:
+            print("CSV file already exists but does not have context column")
+            print("adding context column")
+        
+            file_parser = FileParser()
+            ingestutils = IngestUtils(CHUNK_SIZE, 0, None, TEXT_SPLITTER_METHOD)
+            for index, row in df.iterrows():
+                if row["context"] is not None:
+                    continue
+                file = row["Filename"]
+                if file.endswith(".pdf"):
+                    file_path = os.path.join(folder, file)
+                    raw_pages, metadata = file_parser.parse_file(file_path)
+                    documents = ingestutils.clean_text_to_docs(raw_pages, metadata)
+                    introduction = documents[0].page_content.split("vraag")[0]
+
+                df.at[index, "context"] = introduction
+                df.to_csv(destinationCSV, index=False)
+            print("done adding context to csv")
+            return
+            
+        if len(df) >= 100:
+            print("CSV file already exists and has more than 100 samples")
+            return
+        return
 
     while len(dataList) < 100:
         # Pick random file if not enough samples
@@ -330,6 +363,9 @@ def create_evaluation_sample_questions(folder, ingester: Ingester, destinationCS
                 
                 questions, answers = ingester.get_question_and_answer(concats)
                 
+                introduction = concats.split("vraag")[0]
+                
+                
                 # Ensure questions list is not empty
                 if not questions or len(questions) == 0:
                     continue
@@ -338,6 +374,7 @@ def create_evaluation_sample_questions(folder, ingester: Ingester, destinationCS
                     data = {
                         'Filename': filename,
                         'Question': randomQuestion,
+                        'context': introduction
                     }
                     dataList.append(data)
                     added_filenames.add(filename)  # Add the filename to the set after adding to dataList
@@ -352,6 +389,7 @@ def evaluate_with_sample_questions(samplequestionsCSVPATH,querier: Querier, toCS
     df = pd.read_csv(samplequestionsCSVPATH)
     correct_count = 0
     for index, row in df.iterrows():
+        question = f"{row['context']} {row['Question']}"
         documents = querier.get_documents_with_scores(question=row['Question'])
         if len(documents) > 0:
             if documents[0][0].metadata['filename'] == row['Filename']:
