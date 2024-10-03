@@ -335,6 +335,8 @@ def create_evaluation_sample_questions(folder, ingester: Ingester, destinationCS
     while len(dataList) < 100:
         # Pick random file if not enough samples
         randomsampleids.append(random.choice(os.listdir(folder)))
+        if len(dataList) == len(os.listdir(folder)) - 1:
+            break
         
         for filename in os.listdir(folder):
             # Break loop if we've already collected 100 items
