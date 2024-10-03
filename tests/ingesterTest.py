@@ -11,6 +11,55 @@ class ingesterTest(unittest.TestCase):
         content_folder_name = "kamerVragen"
         content_folder_path, vectordb_folder_path = ut.create_vectordb_name(content_folder_name)
         self.ingester = Ingester(content_folder_name, content_folder_path, vectordb_folder_path)
+    def testGetContext(self):
+        self.initalize()
+        self.assertEqual("""
+                         Vragen van het lid Kostic ´ (PvdD) aan de Minister voor Natuur en Stikstof over
+het aanpassen van antwoorden op schriftelijke vragen over de landelijke
+vrijstellingslijst en het toch niet uitvoeren van een aangenomen motie, vlak na
+gesprekken met de jagerslobby (ingezonden 29 februari 2024).
+Antwoord van Minister Van der Wal-Zeggelink (Natuur en Stikstof)
+(ontvangen 5 april 2024). Zie ook Aanhangsel Handelingen, vergaderjaar
+2023–2024, nr. 1283.""",self.ingester.get_context("""Tweede Kamer der Staten-Generaal 2
+Vergaderjaar 2023–2024 Aanhangsel van de Handelingen
+Vragen gesteld door de leden der Kamer, met de daarop door de
+regering gegeven antwoorden
+1433
+Vragen van het lid Kostic ´ (PvdD) aan de Minister voor Natuur en Stikstof over
+het aanpassen van antwoorden op schriftelijke vragen over de landelijke
+vrijstellingslijst en het toch niet uitvoeren van een aangenomen motie, vlak na
+gesprekken met de jagerslobby (ingezonden 29 februari 2024).
+Antwoord van Minister Van der Wal-Zeggelink (Natuur en Stikstof)
+(ontvangen 5 april 2024). Zie ook Aanhangsel Handelingen, vergaderjaar
+2023–2024, nr. 1283.
+Vraag 1
+Kunt u bevestigen dat de Kamer een motie van de Partij voor de Dieren heeft
+aangenomen, waarmee de regering wordt verzocht om diersoorten die in hun
+voortbestaan worden bedreigd per direct van de landelijke vrijstellingslijst af
+te halen?1
+Antwoord 1
+Ja.
+Vraag 2
+Kunt u bevestigen dat u op 15 februari 2024 in antwoorden op schriftelijke
+vragen het volgende schreef aan de Kamer: «Om aan de motie tegemoet te
+komen, zal ik voorbereidingen treffen voor het intrekken van de vrijstelling en
+de aanwijzing van konijn, houtduif en kauw»?2
+Antwoord 2
+Ja. Op 15 februari 2024 heb ik uw Kamer, in antwoord op vragen van het lid
+Akerboom (PvdD) over de landelijke vrijstellingslijst (Aanhangsel Handelin-
+gen, vergaderjaar 2023–2024, nr. 1045), geïnformeerd over de wijze waarop ik
+uitvoering wil geven aan de motie van het lid Akerboom, 36 410 XIV, nr. 9,
+waarin wordt opgeroepen de soorten die in hun voortbestaan worden
+bedreigd per direct van de vrijstellingslijst af te halen. Door een menselijke
+fout is op 15 februari 2024 een verkeerde versie van mijn antwoord verstuurd,
+hetgeen ik betreur.
+1 Motie van het lid Akerboom (PvdD) over diersoorten die in hun voortbestaan worden bedreigd
+per direct van de landelijke vrijstellingslijst af halen (Kamerstuk 36 410 XIV, nr. 9)
+2 Antwoorden op schriftelijke vragen van het lid Akerboom over de landelijke vrijstellingslijst
+(deze versie is offline gehaald)
+ah-tk-20232024-1433
+ISSN 0921 - 7398
+’s-Gravenhage 2024 Tweede Kamer, vergaderjaar 2023–2024, Aanhangsel 1"""))
     def testGetAnswer__Partial(self):
         self.initalize()
         # Partial file test

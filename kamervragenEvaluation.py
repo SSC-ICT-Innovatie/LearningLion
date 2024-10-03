@@ -365,7 +365,7 @@ def create_evaluation_sample_questions(folder, ingester: Ingester, destinationCS
                 
                 questions, answers = ingester.get_question_and_answer(concats)
                 
-                introduction = concats.split("vraag")[0]
+                introduction = ingester.get_context(concats)
                 
                 
                 # Ensure questions list is not empty

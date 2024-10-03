@@ -24,9 +24,17 @@ def create_vectordb_name(content_folder_name, chunk_size=None, chunk_overlap=Non
         templateVectorname = templateVectorname.replace("chunksize", str(settings.CHUNK_SIZE))
     templateVectorname = templateVectorname.replace("chunkoverlap", str(chunk_overlap))
     templateVectorname = templateVectorname.replace("EMBEDDINGS_PROVIDER", settings.EMBEDDINGS_PROVIDER)
-    templateVectorname = templateVectorname.replace("EMBEDDINGS_MODEL", settings.EMBEDDINGS_MODEL)
+    if embeddings_model is None:
+        embeddings_model = settings.EMBEDDINGS_MODEL
+    embeddings_model = embeddings_model.replace("/", "-")
+    templateVectorname = templateVectorname.replace("EMBEDDINGS_MODEL", str(embeddings_model))
     templateVectorname = templateVectorname.replace("ADDED_CONTEXT", str(added_context))
     templateVectorname = templateVectorname.replace("EMBEDDINGSTYPE", str(embeddings_type))
+    if splitting_method is None:
+        splitting_method = "None"
+    else:
+        splitting_method = str(splitting_method)
+    splitting_method = splitting_method.replace(".", "-")
     templateVectorname = templateVectorname.replace("SPLITTING_METHOD", str(splitting_method))
     vectordb_folder_path = os.path.join(settings.VECDB_DIR, content_folder_name) + templateVectorname 
     

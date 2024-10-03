@@ -104,6 +104,20 @@ class Ingester:
 
         return [questions, answers]
 
+
+    
+    def get_context(self,text):
+        # Pattern to find the first multi-digit number (1 or more digits) and everything up to the first question
+        pattern = re.compile(r'(\d+)\s*(.*?)(Vraag \d+)', re.DOTALL)
+        
+        match = pattern.search(text)
+        
+        if match:
+            # Return the text between the number and the first question
+            return match.group(2).strip()
+        else:
+            return None
+
     def ingest(self, mode:IngestionMode = IngestionMode.default, forceRebuild:bool = false, addedMetaDataURLCSV:str = "", addContext=False) -> None:
         """
         Creates file parser object and ingestutils object and iterates over all files in the folder
@@ -252,10 +266,8 @@ class Ingester:
                             documents[0].page_content = documents[0].page_content.split("vraag")[0]
                             documents = documents[:1]
                     if addContext:
-                        introduction = documents[0].page_content.split("vraag")[0]
-                        for doc in documents:
-                            
-                            doc.page_content = f"{introduction} {doc.page_content}"
+                        introduction = self.get_context(documents)
+                        doc.page_content = f"{introduction} {doc.page_content}"
                             
                                 
                     vector_store.add_documents(
