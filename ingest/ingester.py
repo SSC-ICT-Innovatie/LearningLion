@@ -266,7 +266,7 @@ class Ingester:
                             documents[0].page_content = documents[0].page_content.split("vraag")[0]
                             documents = documents[:1]
                     if addContext:
-                        introduction = self.get_context(documents)
+                        introduction = self.get_context(documents[0])
                         doc.page_content = f"{introduction} {doc.page_content}"
                             
                                 
