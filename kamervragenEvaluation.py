@@ -5,6 +5,7 @@ import pandas as pd
 from langchain_community.vectorstores.chroma import Chroma
 
 
+from error import write_to_error_log
 from ingest.file_parser import FileParser
 from ingest.ingest_utils import IngestUtils
 from ingest.ingester import Ingester, IngestionMode
@@ -292,10 +293,10 @@ def get_random_sample_ids(folder, sample_size):
         randomsampleids.append(random.choice(os.listdir(folder)))
     return randomsampleids
 
-def create_evaluation_sample_questions(folder, ingester: Ingester, destinationCSV: str):
+def create_evaluation_sample_questions(folder, ingester: Ingester, destinationCSV: str, sample_size: int = 100):
     """Create a sample of questions to evaluate the retrieval"""
     file_parser = FileParser()
-    randomsampleids = get_random_sample_ids(folder, 100)
+    randomsampleids = get_random_sample_ids(folder, sample_size)
     dataList = []
     
     # Set to hold filenames already added to dataList
@@ -327,20 +328,19 @@ def create_evaluation_sample_questions(folder, ingester: Ingester, destinationCS
             print("done adding context to csv")
             return
             
-        if len(df) >= 100:
-            print("CSV file already exists and has more than 100 samples")
+        if len(df) >= sample_size:
+            print(f"CSV file already exists and has more than {sample_size} samples")
             return
         return
 
-    while len(dataList) < 100:
+    while len(dataList) < sample_size:
         # Pick random file if not enough samples
         randomsampleids.append(random.choice(os.listdir(folder)))
         if len(dataList) == len(os.listdir(folder)) - 1:
             break
         
         for filename in os.listdir(folder):
-            # Break loop if we've already collected 100 items
-            if len(dataList) >= 100:
+            if len(dataList) >= sample_size:
                 break
 
             # Skip if the filename is not in randomsampleids
@@ -388,49 +388,66 @@ def create_evaluation_sample_questions(folder, ingester: Ingester, destinationCS
     
 def evaluate_with_sample_questions(samplequestionsCSVPATH,querier: Querier, toCSV: bool = False, ingestionMode:IngestionMode = None, addedMetaDataURLCSV:str = None, addContext:bool = None, embeddings_model:str = None, text_splitter_method:str = None, embeddings_provider:str = None, database:str = None, concatFiles:bool = False):
     """Evaluate the retrieval with the sample questions"""
-    df = pd.read_csv(samplequestionsCSVPATH)
-    correct_count = 0
-    for index, row in df.iterrows():
-        question = f"{row['context']} {row['Question']}"
-        documents = querier.get_documents_with_scores(question=question)
-        if len(documents) > 0:
-            if documents[0][0].metadata['filename'] == row['Filename']:
-                correct_count += 1
-                
-                
-    print(f"Correct count: {correct_count}")
-    print(f"Total count: {len(df)}")
-    print(f"Percentage: {correct_count/len(df)*100}%")
-    print(f"Average precision: {correct_count/len(df)}")
-    
-    if toCSV:
-        print("writing to csv")
-        # Create a DataFrame with new data
-        new_data = pd.DataFrame({
-            "Total files checked with questions": [len(df)],
-            "Total files found with questions": [correct_count],
-            "Percentage found questions": [correct_count / len(df) * 100],
-            "Average precision questions": [correct_count / len(df)],
-            "ingestionMode": [ingestionMode],
-            "addedMetaDataURLCSV": [addedMetaDataURLCSV],
-            "addContext": [addContext],
-            "embeddings_model": [embeddings_model],
-            "text_splitter_method": [text_splitter_method],
-            "embeddings_provider": [embeddings_provider],
-            "database": [database],
-            "concatFiles": [concatFiles]
-        })
+    try:
+        df = pd.read_csv(samplequestionsCSVPATH)
+        correct_count = 0
+        for index, row in df.iterrows():
+            question = f"{row['context']} {row['Question']}"
+            documents = querier.get_documents_with_scores(question=question)
+            if len(documents) > 0:
+                if documents[0][0].metadata['filename'] == row['Filename']:
+                    correct_count += 1
+                    
+                    
+        print(f"Correct count: {correct_count}")
+        print(f"Total count: {len(df)}")
+        print(f"Percentage: {correct_count/len(df)*100}%")
+        print(f"Average precision: {correct_count/len(df)}")
         
-        # Check if the CSV file already exists
-        file_path = "results_test_retrival.csv"
-        if os.path.exists(file_path):
-            # If the file exists, read it and concatenate the new data
-            existing_data = pd.read_csv(file_path)
-            updated_data = pd.concat([existing_data, new_data], ignore_index=True)
-        else:
-            # If the file doesn't exist, the new data becomes the updated data
-            updated_data = new_data
-        
-        # Export the updated DataFrame to the CSV file
-        updated_data.to_csv(file_path, index=False)
-    print("done writing to csv")
+        if toCSV:
+            print("writing to csv")
+            # Create a DataFrame with new data
+            new_data = pd.DataFrame({
+                "Total files checked with questions": [len(df)],
+                "Total files found with questions": [correct_count],
+                "Percentage found questions": [correct_count / len(df) * 100],
+                "Average precision questions": [correct_count / len(df)],
+                "ingestionMode": [ingestionMode],
+                "addedMetaDataURLCSV": [addedMetaDataURLCSV],
+                "addContext": [addContext],
+                "embeddings_model": [embeddings_model],
+                "text_splitter_method": [text_splitter_method],
+                "embeddings_provider": [embeddings_provider],
+                "database": [database],
+                "concatFiles": [concatFiles]
+            })
+            
+            # Check if the CSV file already exists
+            file_path = "results_test_retrival.csv"
+            if os.path.exists(file_path):
+                # If the file exists, read it and concatenate the new data
+                existing_data = pd.read_csv(file_path)
+                updated_data = pd.concat([existing_data, new_data], ignore_index=True)
+            else:
+                # If the file doesn't exist, the new data becomes the updated data
+                updated_data = new_data
+            
+            # Export the updated DataFrame to the CSV file
+            updated_data.to_csv(file_path, index=False)
+        print("done writing to csv")
+    except Exception as e:
+        print(f"Error: {e}")
+        print("Could not evaluate with sample questions")
+        params = {
+            "samplequestionsCSVPATH": str(samplequestionsCSVPATH),
+            "toCSV": str(toCSV),
+            "ingestionMode": str(ingestionMode),
+            "addedMetaDataURLCSV": str(addedMetaDataURLCSV),
+            "addContext": str(addContext),
+            "embeddings_model": str(embeddings_model),
+            "text_splitter_method": str(text_splitter_method),
+            "embeddings_provider": str(embeddings_provider),
+            "database": str(database),
+            "concatFiles": str(concatFiles)
+        }
+        write_to_error_log("error_log_kamervragenEvaluation.txt", e, params)
