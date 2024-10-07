@@ -262,13 +262,10 @@ class Ingester:
                             questions, answers = self.get_question_and_answer(documents[0].page_content)
                             documents[0].page_content = f"{' '.join(questions)} {' '.join(answers)}"
                             documents = documents[:1]
-                    if mode == IngestionMode.introduction:
-                            documents[0].page_content = documents[0].page_content.split("vraag")[0]
-                            documents = documents[:1]
                     if addContext:
-                        introduction = self.get_context(documents[0])
-                        doc.page_content = f"{introduction} {doc.page_content}"
-                            
+                        introduction = self.get_context(documents[0].page_content)
+                        # Ensure you are updating documents[0], which was used previously
+                        documents[0].page_content = f"{introduction} {documents[0].page_content}"
                                 
                     vector_store.add_documents(
                         documents=documents,
