@@ -1,3 +1,4 @@
+import csv
 import json
 import os
 from threading import Thread
@@ -8,9 +9,14 @@ from data_classes.kamerVragenData import KamerVragenData
 from typing import List
 import mimetypes
 
+from PyPDF2 import PdfWriter, PdfReader
+
 class KamerVragen(dataSource):
     url = "https://gegevensmagazijn.tweedekamer.nl/OData/v4/2.0/Document?$filter=Verwijderd eq false and Soort eq 'Antwoord schriftelijke vragen'"
+    urlLIMITED = "https://gegevensmagazijn.tweedekamer.nl/OData/v4/2.0/Document?$filter=Verwijderd eq false and Soort eq 'Antwoord schriftelijke vragen' and (year(DatumRegistratie) eq 2024 and month(DatumRegistratie) ge 1 and day(DatumRegistratie) ge 1) and (year(DatumRegistratie) eq 2024 and month(DatumRegistratie) lt 9)"
+    urlAfter2010 = "https://gegevensmagazijn.tweedekamer.nl/OData/v4/2.0/Document?$filter=Verwijderd eq false and Soort eq 'Antwoord schriftelijke vragen' and year(DatumRegistratie) gt 2010"
     downloadurlTemplate = "https://gegevensmagazijn.tweedekamer.nl/OData/v4/2.0/Document({0})/resource"
+    documenturlTemplate = "https://gegevensmagazijn.tweedekamer.nl/OData/v4/2.0/Document({0})"
     limit: int
     targetfolder = "kamervragen_files"
     limitDisabled = False
@@ -66,7 +72,7 @@ class KamerVragen(dataSource):
         """Fetch all data from the API. The limit parameter is used to limit the amount of items fetched can be go over the limit due to multithreading"""
         if(self.limit < 1):
             self.limitDisabled = True
-        response = requests.get(self.url)
+        response = requests.get(self.urlLIMITED)
         thread = None
         
         if(response.status_code == 200):
@@ -98,6 +104,8 @@ class KamerVragen(dataSource):
       
     def fetchFile(self, fileId, path=None):
         """Download a single file from the API"""
+        sidecar_csv = "metadata.csv"
+        
         if path == None:
             if(os.path.exists(self.targetfolder) == False):
                 os.mkdir(self.targetfolder)
@@ -106,6 +114,10 @@ class KamerVragen(dataSource):
                 os.makedirs(path)
         
         url = self.downloadurlTemplate.format(fileId)
+        response_meta = requests.get(self.documenturlTemplate.format(fileId))
+        if(response_meta.status_code != 200):
+            print(f"Failed to fetch metadata for file {fileId}")
+            return
         response = requests.get(url, stream=True)
         if response.status_code == 200:
             content_type = response.headers.get('Content-Type')
@@ -124,10 +136,55 @@ class KamerVragen(dataSource):
                 return
             
             print(f"Downloading file {filename}")
-            with open(filename, "wb") as file:
+            filenametemp = filename
+            if(filename.endswith(".pdf")):
+                filenametemp = filename.replace(".pdf", ".temp")
+            with open(filenametemp, "wb") as file:
                 for chunk in response.iter_content(chunk_size=1024):
                     if chunk:
                         file.write(chunk)
+                        
+            if(extension == ".pdf"):
+                response_meta_body = response_meta.json()
+                
+                pdfwriter = PdfWriter()
+                reader = PdfReader(filenametemp)
+                
+                for page in reader.pages:
+                    pdfwriter.add_page(page)
+                
+
+                metadata_pdf = {
+                    "/Title": f"{response_meta_body['Titel']}",
+                    "/Subject": f"{response_meta_body['Onderwerp']}",
+                    "/Producer": f'File downloaded from {url}',
+                }
+                # Write metadata to the PDF
+                pdfwriter.add_metadata(metadata_pdf)
+                
+                with open(filename, "wb") as f:
+                    pdfwriter.write(f)
+                os.remove(filenametemp)
+                
+                file_exists = os.path.isfile(sidecar_csv)
+                
+                metadata = {
+                    "id": fileId,
+                    "Subject": f"{response_meta_body['Onderwerp']}",
+                    "Title": f"{response_meta_body['Titel']}",
+                    "Source": f'{url}',
+                    
+                }
+                
+                with open(sidecar_csv, mode='a', newline='', encoding='utf-8') as csv_file:
+                    fieldnames = ["id", "Title", "Subject","Source"]
+                    writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+                    if not file_exists:
+                        writer.writeheader()
+                    
+                    # Write the metadata to the CSV
+                    writer.writerow(metadata)
+
             print(f"File downloaded successfully as {filename}")
         else:
             print(f"Failed to download file. Status code: {response.status_code}")
@@ -135,7 +192,7 @@ class KamerVragen(dataSource):
         
     def getTotalItemsInApi(self):
         """Fetch the total number of items in the API"""
-        url = self.url
+        url = self.urlLIMITED
         while url:
             response = requests.get(url)
             if response.status_code == 200:
@@ -156,7 +213,7 @@ class KamerVragen(dataSource):
     def getAllTypes(self, url=None, downloadFiles=False, downloadTypes=None):
         """Fetch all types of Kamervragen and download the files"""
         if url is None:
-            url = self.url
+            url = self.urlLIMITED
         pagenumber = 1
 
         while url:
