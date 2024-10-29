@@ -13,8 +13,10 @@ class Deployment:
       return {"error": "No prompt provided"}
     chatlog = None
     if "chatlog" in data:
-      chatlog = data["chatlog"]
+      if "chatlog" in data is not None:
+        chatlog = data["chatlog"]
     files = None
     if "files" in data:
-      files = data["files"]
+      if "file" in data is not None:
+        files = data["file"]
     return {"output":self.inference.predict(data["prompt"], chatlog, files)}

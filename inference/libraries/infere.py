@@ -21,7 +21,6 @@ class Infer:
         ]
     
     if chatlog is not None:
-      data = json.loads(chatlog)
       converation.append({"role": "system", "content": f"eerdere berichten {chatlog}"})
     if files is not None:
       converation.append({"role": "system", "content": f"relevante bestanden {files}"})
