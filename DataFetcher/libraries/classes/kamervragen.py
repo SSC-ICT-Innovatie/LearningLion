@@ -18,17 +18,21 @@ class KamerVragen(dataSource):
     downloadurlTemplate = "https://gegevensmagazijn.tweedekamer.nl/OData/v4/2.0/Document({0})/resource"
     documenturlTemplate = "https://gegevensmagazijn.tweedekamer.nl/OData/v4/2.0/Document({0})"
     limit: int
-    targetfolder = "kamervragen_files"
+    targetfolder = "tmp"
     limitDisabled = False
     dataitems: List[KamerVragenData] = []
     threads:List[Thread] = []
     threadLimit = 20
     totalItems = 0
     soorten:dict[str, int] = {}
+    downloadedFiles = []
+    bucketName = "kamervragen"
     
-    def __init__(self, limit):
+    def __init__(self, limit, bucketname = None):
         self.limit = limit
         self.totalItems = 0
+        if bucketname:
+            self.bucketName = bucketname
     
     def _fetchDataPagenated(self, url):
         """Fetch data from the API pagenated"""
@@ -165,6 +169,11 @@ class KamerVragen(dataSource):
                 with open(filename, "wb") as f:
                     pdfwriter.write(f)
                 os.remove(filenametemp)
+                self.downloadedFiles.append({
+                    "file": filename,
+                    "bucket": self.bucketName,
+                    "bucket-file": f"kamervragen/{filename}"
+                })
                 
                 file_exists = os.path.isfile(sidecar_csv)
                 
@@ -173,7 +182,6 @@ class KamerVragen(dataSource):
                     "Subject": f"{response_meta_body['Onderwerp']}",
                     "Title": f"{response_meta_body['Titel']}",
                     "Source": f'{url}',
-                    
                 }
                 
                 with open(sidecar_csv, mode='a', newline='', encoding='utf-8') as csv_file:
@@ -220,7 +228,9 @@ class KamerVragen(dataSource):
             print(f"Fetching page #{pagenumber}")
             print("has total items: ", len(self.soorten))
             response = requests.get(url)
-            
+            baseURL = None
+            if downloadTypes is not None and (len(downloadTypes) == 1):
+                baseURL = ""
             if response.status_code == 200:
                 rawData = response.json()
                 for rawItem in rawData['value']:
@@ -228,11 +238,11 @@ class KamerVragen(dataSource):
                     if self.soorten.get(dataitem.soort) is None:
                         self.soorten[dataitem.soort] = 1
                         if downloadFiles or (downloadTypes and dataitem.soort in downloadTypes):
-                            self.fetchFile(dataitem.id, "{}/".format(self.targetfolder) + dataitem.soort.replace("/", "-"))
+                            self.fetchFile(dataitem.id, "{}/".format(self.targetfolder) + (dataitem.soort.replace("/", "-") if baseURL == None else baseURL))
                     else:
                         self.soorten[dataitem.soort] += 1
                     if (downloadTypes and dataitem.soort in downloadTypes):
-                            self.fetchFile(dataitem.id, "{}/".format(self.targetfolder) + dataitem.soort.replace("/", "-"))
+                            self.fetchFile(dataitem.id, "{}/".format(self.targetfolder) + (dataitem.soort.replace("/", "-") if baseURL == None else baseURL))
 
                 url = rawData.get('@odata.nextLink')
                 pagenumber += 1
@@ -246,6 +256,8 @@ class KamerVragen(dataSource):
         # write to file
         with open("soorten.json", "w") as file:
             json.dump(self.soorten, file, indent=4)
+            
+        return self.downloadedFiles
 
         
     def exit(self):

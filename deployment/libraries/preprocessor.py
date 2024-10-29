@@ -1,6 +1,6 @@
 import re
 
-class PreProcessor:
+class Preprocessor:
   
   def run_preprocessing(self, text:str, functions: list) -> str:
       """
