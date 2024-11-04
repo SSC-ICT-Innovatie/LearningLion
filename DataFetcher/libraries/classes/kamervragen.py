@@ -4,16 +4,24 @@ import os
 from threading import Thread
 import threading
 import requests
-from interface.dataSource import dataSource
-from data_classes.kamerVragenData import KamerVragenData
+# from data_classes.range_enum import Range
+# from interface.dataSource import dataSource
+# from data_classes.kamerVragenData import KamerVragenData
 from typing import List
 import mimetypes
 
 from PyPDF2 import PdfWriter, PdfReader
 
+from DataFetcher.libraries.data_classes.kamerVragenData import KamerVragenData
+from DataFetcher.libraries.data_classes.range_enum import Range
+from DataFetcher.libraries.interface import dataSource
+
 class KamerVragen(dataSource):
     url = "https://gegevensmagazijn.tweedekamer.nl/OData/v4/2.0/Document?$filter=Verwijderd eq false and Soort eq 'Antwoord schriftelijke vragen'"
     urlLIMITED = "https://gegevensmagazijn.tweedekamer.nl/OData/v4/2.0/Document?$filter=Verwijderd eq false and Soort eq 'Antwoord schriftelijke vragen' and (year(DatumRegistratie) eq 2024 and month(DatumRegistratie) ge 1 and day(DatumRegistratie) ge 1) and (year(DatumRegistratie) eq 2024 and month(DatumRegistratie) lt 9)"
+    urlLIMITEDFirst = "https://gegevensmagazijn.tweedekamer.nl/OData/v4/2.0/Document?$filter=Verwijderd eq false and Soort eq 'Antwoord schriftelijke vragen' and (year(DatumRegistratie) eq 2022 and month(DatumRegistratie) ge 1 and day(DatumRegistratie) ge 1) and (year(DatumRegistratie) lt 2024)"
+    urlLIMITEDSecond = "https://gegevensmagazijn.tweedekamer.nl/OData/v4/2.0/Document?$filter=Verwijderd eq false and Soort eq 'Antwoord schriftelijke vragen' and (year(DatumRegistratie) eq 2018 and month(DatumRegistratie) ge 1 and day(DatumRegistratie) ge 1) and (year(DatumRegistratie) lt 2024)"
+    urlLIMITEDThird = "https://gegevensmagazijn.tweedekamer.nl/OData/v4/2.0/Document?$filter=Verwijderd eq false and Soort eq 'Antwoord schriftelijke vragen' and (year(DatumRegistratie) eq 2023 and month(DatumRegistratie) ge 8 and day(DatumRegistratie) ge 1) and (year(DatumRegistratie) lt 2024)"
     urlAfter2010 = "https://gegevensmagazijn.tweedekamer.nl/OData/v4/2.0/Document?$filter=Verwijderd eq false and Soort eq 'Antwoord schriftelijke vragen' and year(DatumRegistratie) gt 2010"
     downloadurlTemplate = "https://gegevensmagazijn.tweedekamer.nl/OData/v4/2.0/Document({0})/resource"
     documenturlTemplate = "https://gegevensmagazijn.tweedekamer.nl/OData/v4/2.0/Document({0})"
@@ -218,10 +226,19 @@ class KamerVragen(dataSource):
         return self.totalItems
 
 
-    def getAllTypes(self, url=None, downloadFiles=False, downloadTypes=None):
+    def getAllTypes(self, url=None, downloadFiles=False, downloadTypes=None, range=Range.Large):
         """Fetch all types of Kamervragen and download the files"""
-        if url is None:
-            url = self.urlLIMITED
+        
+        if range == Range.All:
+            url = self.urlAfter2010
+        if range == Range.Large:
+            url = self.urlLIMITEDSecond
+        if range == Range.Medium:
+            url = self.urlLIMITEDFirst
+        if range == Range.Tiny:
+            url = self.urlLIMITEDThird
+        # if url is None:
+            # url = self.urlLIMITED
         pagenumber = 1
 
         while url:

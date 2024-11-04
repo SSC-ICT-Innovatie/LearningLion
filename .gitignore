@@ -162,3 +162,5 @@ docs
 /vectordb
 
 docs
+/tmp
+*.zip
