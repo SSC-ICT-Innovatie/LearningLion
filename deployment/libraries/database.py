@@ -3,8 +3,10 @@ from langchain_chroma import Chroma
 import os
 from langchain.retrievers import BM25Retriever
 
-from embedding import Embedding
-from ubiops_helper import UbiopsHelper
+# from embedding import Embedding
+from deployment.libraries.embedding import Embedding
+from deployment.libraries.ubiops_helper import UbiopsHelper
+# from ubiops_helper import UbiopsHelper
 
 class Database:
   bm25Retriever = None

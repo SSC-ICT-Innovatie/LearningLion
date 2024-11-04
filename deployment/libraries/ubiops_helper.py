@@ -2,12 +2,13 @@ import os
 import requests
 import ubiops
 
-APIKEY = "Token ########"
+APIKEY = "Token XXXX"
 
 class UbiopsHelper:
     @staticmethod
     def uploadfile(file_path, dest_path, retry=0):
-        
+        if os.environ["local"] == "true":
+            raise ValueError("Cannot upload file in local mode")
         configuration = ubiops.Configuration()
         configuration.api_key['Authorization'] = APIKEY
         configuration.host = "https://api.ubiops.com/v2.1"
@@ -48,6 +49,8 @@ class UbiopsHelper:
         return True
     @staticmethod
     def downloadfile(filename:str,project_name, bucket_name,output_folder="./"):
+        if os.environ["local"] == "true":
+            raise ValueError("Cannot download file in local mode")
         print(f"Downloading file: {filename}")
         print(f"output_folder: {output_folder}")
         configuration = ubiops.Configuration()
@@ -79,6 +82,8 @@ class UbiopsHelper:
             return False
     @staticmethod
     def listFilesInBucket(project_name, bucket_name):
+        if os.environ["local"] == "true":
+            raise ValueError("Cannot list files in local mode")
         configuration = ubiops.Configuration()
         configuration.api_key['Authorization'] = APIKEY
         api_client = ubiops.ApiClient(configuration)
@@ -87,6 +92,8 @@ class UbiopsHelper:
         return api_response
     @staticmethod
     def download_folder(project_name, bucket_name, folder_path, output_folder):
+        if os.environ["local"] == "true":
+            raise ValueError("Cannot download folder in local mode")
         print("params")
         print(f"project_name: {project_name}")
         print(f"bucket_name: {bucket_name}")

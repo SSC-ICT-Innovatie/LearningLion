@@ -1,5 +1,7 @@
 from langchain.retrievers import EnsembleRetriever
-import database
+
+from deployment.libraries import database
+# import database
 class Query:
     ensemble_retriever = None
 

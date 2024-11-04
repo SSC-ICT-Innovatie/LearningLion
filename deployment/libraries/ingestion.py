@@ -1,3 +1,4 @@
+import json
 import traceback
 import zipfile
 import requests
@@ -9,7 +10,10 @@ import os
 from pypdf import PdfReader
 from langchain.retrievers import BM25Retriever
 
-from ubiops_helper import UbiopsHelper
+from deployment.libraries.ubiops_helper import UbiopsHelper
+
+# from preprocessor import Preprocessor
+# from ubiops_helper import UbiopsHelper
 
 class Ingestion:
     text_splitter = None
@@ -106,7 +110,10 @@ class Ingestion:
                         with open(file_path, "rb") as pdf_file:
                             reader = PdfReader(pdf_file)
                             metadata_text = reader.metadata
+                            print(f"metadata: {metadata_text.get('/Subject')}" )
                             pages = []
+                            doc_subject = metadata_text.get('/Subject') or "unknown"
+                            doc_producer = metadata_text.get('/Producer') or "unknown"
                             for i, p in enumerate(reader.pages):
                                 extracted_text = p.extract_text().strip()
                                 if extracted_text:
@@ -118,7 +125,14 @@ class Ingestion:
                                 chunkNumber = 0
                                 for split_page in split_pages:
                                     uuid = filename.split(".")[0]
-                                    doc = Document(page_content=split_page, metadata={"page_number": page_num, "UUID": uuid}, id=f"{uuid}_{page_num}_{chunkNumber}")
+                                    doc = Document(page_content=split_page, 
+                                                   metadata={"page_number": page_num,
+                                                             "UUID": uuid, 
+                                                             "filename": filename,
+                                                             "subject":doc_subject,
+                                                             "total_pages": len(pages),
+                                                             "producer": doc_producer}, 
+                                                   id=f"{uuid}_{page_num}_{chunkNumber}")
                                     documents.append(doc)
                                     chunkNumber += 1
                         print(f"Processed {items} files out of {totalFiles_in_dir}")
