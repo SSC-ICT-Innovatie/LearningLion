@@ -4,6 +4,7 @@ import os
 from langchain.retrievers import BM25Retriever
 
 # from embedding import Embedding
+from DataFetcher.libraries.data_classes.range_enum import Range
 from deployment.libraries.embedding import Embedding
 from deployment.libraries.ubiops_helper import UbiopsHelper
 # from ubiops_helper import UbiopsHelper
@@ -22,11 +23,19 @@ class Database:
             print("No embeddings provided to Database class")
         print("Database class initialized")
 
+  def setNameBasedOnRange(self, range):
+        if range is not None:
+            return (f"NewPipeChroma_{range.name}", f"vectordb_{range.name}")
   
-  def setup_database(self):
+  def setup_database(self,range=Range.Tiny):
       # Set up Chroma vector store
       if not os.path.exists(self.vectordb_folder):
           os.mkdir(self.vectordb_folder)
+      if range is not None:
+            print(f"Setting up database with range {range}")
+            names = self.getNameBasedOnRange(range)
+            self.vectordb_name = names[0]
+            self.vectordb_folder = names[1]
       
       # Initialize Chroma and save it
       Database.vector_store = Chroma(

@@ -3,8 +3,8 @@ import zipfile
 from DataFetcher.libraries.classes.kamervragen import KamerVragen
 from DataFetcher.libraries.data_classes.range_enum import Range
 
-def run_local_datafetcher():
-  ran = Range.Tiny
+def run_local_datafetcher(range=Range.Tiny):
+  ran = range
   kamervragen = KamerVragen(100)
   files = kamervragen.getAllTypes(downloadTypes=['Antwoord schriftelijke vragen'], range=ran)
   print(f"Downloaded {len(files)} files")
