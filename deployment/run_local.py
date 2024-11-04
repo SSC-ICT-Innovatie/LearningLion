@@ -1,3 +1,4 @@
+from DataFetcher.libraries.data_classes.range_enum import Range
 from deployment.libraries import database, embedding, ingestion, query
 
 def run_local_query_stores(prompt):
@@ -5,13 +6,11 @@ def run_local_query_stores(prompt):
   embed = embedding.Embedding()
   ingest = ingestion.Ingestion()
   data = database.Database(embed)
-  data.download_vector_store()
-  data.download_bm25_retriever()
   querier = query.Query()
   querier.setup_querier(data)
   return querier.query(prompt)
 
-def run_local_ingest_stores():
+def run_local_ingest_stores(range=Range.Tiny):
   print("Running Main class")
   # Initialize components
   embed = embedding.Embedding()
@@ -24,7 +23,7 @@ def run_local_ingest_stores():
   print("Set up embeddings and vector store")
   ingest.setupTextSplitter()
   embed.setup_embeddings()
-  data.setup_database()
+  data.setup_database(range=range)
 
   # Perform ingestion and retrieve BM25 retriever
   print("Perform ingestion")
@@ -40,6 +39,7 @@ def run_local_ingest_stores():
   # Setup querier
   print("Setup querier")
   querier.setup_querier(data)
+  
   
   print("Ready to query")
   # Test a query
