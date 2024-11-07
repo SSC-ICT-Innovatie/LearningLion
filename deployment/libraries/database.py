@@ -62,7 +62,9 @@ class Database:
                 subject TEXT,
                 producer TEXT,
                 content TEXT,
-                summirized TEXT
+                summirized TEXT,
+                document_type TEXT,
+                document BLOB
             )
             """
         )

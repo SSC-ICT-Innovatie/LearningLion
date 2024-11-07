@@ -114,6 +114,13 @@ class Ingestion:
                         with open(file_path, "rb") as pdf_file:
                             uuid = filename.split(".")[0]
                             reader = PdfReader(pdf_file)
+                            # Move the pointer back to the start of the file
+                            pdf_file.seek(0)
+                            
+                            # Read the raw bytes of the PDF document
+                            blobData = pdf_file.read()
+                            pdf_file.seek(0)
+                            
                             metadata_text = reader.metadata
                             print(f"metadata: {metadata_text.get('/Subject')}" )
                             pages = []
@@ -126,7 +133,8 @@ class Ingestion:
                                     pages.append((i + 1, extracted_text))
                                     full_text += extracted_text
                             if db_connection:
-                                db_connection.execute("INSERT INTO documents (UUID, filename, subject, producer, content, summirized) VALUES (?, ?, ?, ?, ?, ?)", (uuid, filename, doc_subject, doc_producer, full_text, self.summirize(full_text)))
+                                db_connection.execute("INSERT INTO documents (UUID, filename, subject, producer, content, summirized, document_type, document) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", 
+                                                      (uuid, filename, doc_subject, doc_producer, full_text, self.summirize(full_text), "pdf", blobData))
                                 db_connection.commit()
                                 print("Written to database")
 
