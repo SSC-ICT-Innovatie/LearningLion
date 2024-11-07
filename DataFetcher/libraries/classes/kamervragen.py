@@ -271,7 +271,7 @@ class KamerVragen(dataSource):
         print(f"Soorten: {self.soorten}")
         self.soorten = dict(sorted(self.soorten.items(), key=lambda item: item[1], reverse=True))
         # write to file
-        with open("soorten.json", "w") as file:
+        with open(f"soorten_{range}.json", "w") as file:
             json.dump(self.soorten, file, indent=4)
             
         return self.downloadedFiles

@@ -165,3 +165,5 @@ docs
 /tmp
 *.zip
 *.pkl
+/vectordb_Tiny
+*.db

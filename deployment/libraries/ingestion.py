@@ -1,4 +1,5 @@
 import json
+from sqlite3 import Connection
 import traceback
 import zipfile
 import requests
@@ -11,7 +12,7 @@ from pypdf import PdfReader
 from langchain.retrievers import BM25Retriever
 
 from deployment.libraries.ubiops_helper import UbiopsHelper
-
+import sqlite3
 # from preprocessor import Preprocessor
 # from ubiops_helper import UbiopsHelper
 
@@ -76,9 +77,12 @@ class Ingestion:
             print(f"Downloading file: {file.file}")
             UbiopsHelper.downloadfile(file.file, project_name, bucket_name, output_dir)
         return output_dir
-        
+    
+    def summirize(self, text):
+        # TODO: Implement summarization
+        return text
 
-    def ingest(self, source_dir=None, vector_store=None, embeddings=None, bm25: BM25Retriever|None =None):
+    def ingest(self, source_dir=None, vector_store=None, embeddings=None, bm25: BM25Retriever|None =None, db_connection:Connection|None =None):
         vector_store = vector_store
         text_splitter = self.getTextSplitter()
         embeddings = embeddings
@@ -108,23 +112,29 @@ class Ingestion:
                         items += 1
                         file_path = os.path.join(sourceDir, filename)
                         with open(file_path, "rb") as pdf_file:
+                            uuid = filename.split(".")[0]
                             reader = PdfReader(pdf_file)
                             metadata_text = reader.metadata
                             print(f"metadata: {metadata_text.get('/Subject')}" )
                             pages = []
+                            full_text = ""
                             doc_subject = metadata_text.get('/Subject') or "unknown"
                             doc_producer = metadata_text.get('/Producer') or "unknown"
                             for i, p in enumerate(reader.pages):
                                 extracted_text = p.extract_text().strip()
                                 if extracted_text:
                                     pages.append((i + 1, extracted_text))
+                                    full_text += extracted_text
+                            if db_connection:
+                                db_connection.execute("INSERT INTO documents (UUID, filename, subject, producer, content, summirized) VALUES (?, ?, ?, ?, ?, ?)", (uuid, filename, doc_subject, doc_producer, full_text, self.summirize(full_text)))
+                                db_connection.commit()
+                                print("Written to database")
 
                             cleaned_pages = []
                             for page_num, text in pages:
                                 split_pages = text_splitter.split_text(text)
                                 chunkNumber = 0
                                 for split_page in split_pages:
-                                    uuid = filename.split(".")[0]
                                     doc = Document(page_content=split_page, 
                                                    metadata={"page_number": page_num,
                                                              "UUID": uuid, 

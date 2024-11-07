@@ -1,4 +1,5 @@
 import pickle
+import sqlite3
 from langchain_chroma import Chroma
 import os
 from langchain.retrievers import BM25Retriever
@@ -15,6 +16,7 @@ class Database:
   vectordb_folder = "vectordb"
   vectordb_name = "NewPipeChroma"
   embeddings = None
+  con = None
   
   def __init__(self, embed:Embedding):
         if embed is not None:
@@ -23,7 +25,7 @@ class Database:
             print("No embeddings provided to Database class")
         print("Database class initialized")
 
-  def setNameBasedOnRange(self, range):
+  def getNameBasedOnRange(self, range):
         if range is not None:
             return (f"NewPipeChroma_{range.name}", f"vectordb_{range.name}")
   
@@ -34,6 +36,8 @@ class Database:
       if range is not None:
             print(f"Setting up database with range {range}")
             names = self.getNameBasedOnRange(range)
+            Database.con = sqlite3.connect(f"{names[0]}.db")
+            self.apply_database_schema()
             self.vectordb_name = names[0]
             self.vectordb_folder = names[1]
       
@@ -44,6 +48,36 @@ class Database:
           persist_directory=self.vectordb_folder,
           collection_metadata={"hnsw:space": "cosine"}
       )
+  def apply_database_schema(self):
+        # Apply schema to database
+        if Database.con is None:
+            print("No database connection set")
+            return
+        cursor = Database.con.cursor()
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS documents (
+                UUID TEXT PRIMARY KEY,
+                filename TEXT,
+                subject TEXT,
+                producer TEXT,
+                content TEXT,
+                summirized TEXT
+            )
+            """
+        )
+        Database.con.commit()
+        print("Database schema applied")
+        
+  def get_database_connection(self):
+        if Database.con is None:
+            print("No database connection set")
+            if self.vectordb_name is not None:
+                Database.con = sqlite3.connect(f"{self.vectordb_name}.db")
+                print(f"Database connection set to {self.vectordb_name}")
+        else:
+            print("Database connection already set")
+        return Database.con
 
   def get_vector_store(self):
       # Load vector store if not already set
