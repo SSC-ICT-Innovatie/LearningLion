@@ -81,7 +81,7 @@ class Database:
             print("Database connection already set")
         return Database.con
 
-  def get_vector_store(self):
+  def get_vector_store(self) -> Chroma | None:
       # Load vector store if not already set
       if Database.vector_store is None and self.embeddings is not None:
           if os.path.exists(self.vectordb_folder):
@@ -95,7 +95,7 @@ class Database:
               return None
       return Database.vector_store
 
-  def setup_bm25_retriever(self, docs=None):
+  def setup_bm25_retriever(self, docs=None) -> BM25Retriever | None:
       if docs is None:
           print("No documents to setup BM25 retriever")
           return

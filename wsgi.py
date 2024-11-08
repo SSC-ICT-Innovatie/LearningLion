@@ -43,10 +43,10 @@ def prompt():
     if "prompt" not in data:
         return jsonify({"error": "No prompt provided"})
 
-    documents = run_local_query_stores("Hallo")
+    documents = run_local_query_stores(data["prompt"])
     print(f"Got {len(documents)} documents")
     print(f"Documents: {documents[:5]}")
-    AIresponse = infer_run_local("hallo")
+    AIresponse = infer_run_local(data["prompt"], files=documents)
     print(f"AI response: {AIresponse}")
     return jsonify({
         "prompt": data["prompt"],

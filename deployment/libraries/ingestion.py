@@ -133,10 +133,16 @@ class Ingestion:
                                     pages.append((i + 1, extracted_text))
                                     full_text += extracted_text
                             if db_connection:
-                                db_connection.execute("INSERT INTO documents (UUID, filename, subject, producer, content, summirized, document_type, document) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", 
+                                # Check if document already exists
+                                results = db_connection.execute("SELECT * FROM documents WHERE UUID=?", (uuid,)).fetchall()
+                                if len(results) > 0:
+                                    print(f"Document with UUID {uuid} already exists in database")
+                                else:
+                                    # Insert document
+                                    db_connection.execute("INSERT INTO documents (UUID, filename, subject, producer, content, summirized, document_type, document) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", 
                                                       (uuid, filename, doc_subject, doc_producer, full_text, self.summirize(full_text), "pdf", blobData))
-                                db_connection.commit()
-                                print("Written to database")
+                                    db_connection.commit()
+                                    print("Written to database")
 
                             cleaned_pages = []
                             for page_num, text in pages:
