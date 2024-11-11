@@ -30,72 +30,25 @@ class Infer:
 				parsed_conversation.append({"role": role, "content": message})
 			return parsed_conversation
 
-	def predict(self, prompt, chatlog=None, files=None):
-		template = (
-    "{% for message in messages %}"
-    "{% if message['role'] != 'system' %}"
-    "{{ message['role'].upper() + ': '}}"
-    "{% endif %}"
-    "{# Render all images first #}"
-    "{% for content in message['content'] | selectattr('type', 'equalto', 'image') %}"
-    "{{ '<image>\n' }}"
-    "{% endfor %}"
-    "{# Render all text next #}"
-    "{% if message['role'] != 'assistant' %}"
-    "{% for content in message['content'] | selectattr('type', 'equalto', 'text') %}"
-    "{{ content['text'] + ' '}}"
-    "{% endfor %}"
-    "{% else %}"
-    "{% for content in message['content'] | selectattr('type', 'equalto', 'text') %}"
-    "{% generation %}"
-    "{{ content['text'] + ' '}}"
-    "{% endgeneration %}"
-    "{% endfor %}"
-    "{% endif %}"
-    "{% endfor %}"
-    "{% if add_generation_prompt %}"
-    "{{ 'ASSISTANT:' }}"
-    "{% endif %}"
-)
-     
-     
+	def predict(self, prompt, chatlog=None, files=None,system_prompt=None,  generation_kwargs=None):
+		if system_prompt is None:
+			system_prompt = self.systemPrompt
 		# Initialize conversation with the system prompt
-		conversation = [{"role": "system", "content": self.systemPrompt}]
-		
+		conversation = [{"role": "system", "content": system_prompt}]
 		# Parse chatlog and add it to conversation
 		if chatlog is not None:
 			parsed_chatlog = self.parse_chatlog(chatlog)
 			conversation.extend(parsed_chatlog)
-		
 		# Add the latest user prompt to the conversation
 		conversation.append({"role": "user", "content": prompt})
-		
 		# Include any files if provided
 		if files is not None:
 			conversation.append({"role": "system", "content": f"Relevante bestanden:\n{files}"})
-		
-  
 		# Add custom markers as special tokens
 		self.generator.tokenizer.add_special_tokens({
 			'additional_special_tokens': ['<|im_start|>', '<|im_end|>']
 		})
 		self.generator.model.resize_token_embeddings(len(self.generator.tokenizer))
-
-		# Generate the translated prompt
-		# translatedPrompt = self.generator.tokenizer.apply_chat_template(
-		# 	conversation,chat_template=template, tokenize=False, add_generation_prompt=False, truncation=True
-		# )
-  
-		# model_inputs_batch = self.generator.tokenizer(translatedPrompt, return_tensors="pt", padding=True)
-
-		# generated_ids_batch = self.generator(
-			# **model_inputs_batch,
-			# max_new_tokens=512,
-		# )
-		# print(f"generated_ids_batch: {generated_ids_batch}")
-		# generated_ids_batch = generated_ids_batch[:, model_inputs_batch.input_ids.shape[1]:]
-		# response_batch = self.generator.tokenizer.batch_decode(generated_ids_batch, skip_special_tokens=True)
-
 
 		# Generate text prompt without tokenizing
 		text = self.generator.tokenizer.apply_chat_template(
@@ -103,11 +56,16 @@ class Infer:
 			tokenize=False,
 			add_generation_prompt=True,
 		)
-		generate_kwargs = {
-			"do_sample": False,
-			"temperature": 1.0,
-			"max_new_tokens": 500,
-		}
+		base_generate_kwargs = {
+				"do_sample": False,
+				"temperature": 1.0,
+				"max_new_tokens": 500,
+			}
+		generate_kwargs = base_generate_kwargs
+		if generation_kwargs is not None:
+			generate_kwargs = {**base_generate_kwargs, **generation_kwargs}
+			print(generate_kwargs)
+
 		# Pass the text directly to the generator
 		response = self.generator(text, **generate_kwargs)
 		response = response[0]["generated_text"]
