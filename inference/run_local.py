@@ -9,3 +9,6 @@ def infer_run_local(prompt,
                     generation_kwargs=None):
   inference = Infer(LLM)
   return inference.predict(prompt, chatlog, files, systemPrompt, generation_kwargs)
+
+def infer_factory(LLM="BramVanroy/fietje-2-chat"):
+  return Infer(LLM)
