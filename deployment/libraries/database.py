@@ -25,7 +25,7 @@ class Database:
             print("No embeddings provided to Database class")
         print("Database class initialized")
 
-  def getNameBasedOnRange(self, range):
+  def getNameBasedOnRange(self, range=Range.Tiny):
         if range is not None:
             return (f"NewPipeChroma_{range.name}", f"vectordb_{range.name}")
   
@@ -36,7 +36,7 @@ class Database:
       if range is not None:
             print(f"Setting up database with range {range}")
             names = self.getNameBasedOnRange(range)
-            Database.con = sqlite3.connect(f"{names[0]}.db")
+            Database.con = sqlite3.connect(f"{names[0]}.db", detect_types=sqlite3.PARSE_DECLTYPES)
             self.apply_database_schema()
             self.vectordb_name = names[0]
             self.vectordb_folder = names[1]
@@ -71,16 +71,24 @@ class Database:
         Database.con.commit()
         print("Database schema applied")
         
-  def get_database_connection(self):
+  def get_database_connection(self, range=Range.Tiny) -> sqlite3.Connection:
         if Database.con is None:
             print("No database connection set")
             if self.vectordb_name is not None:
-                Database.con = sqlite3.connect(f"{self.vectordb_name}.db")
+                names = self.getNameBasedOnRange()
+                Database.con = sqlite3.connect(f"{names[0]}.db", detect_types=sqlite3.PARSE_DECLTYPES)
                 print(f"Database connection set to {self.vectordb_name}")
         else:
             print("Database connection already set")
         return Database.con
-
+  def close_database_connection(self):
+        if Database.con is not None:
+            Database.con.close()
+            Database.con = None
+            print("Database connection closed")
+        else:
+            print("No database connection to close")
+    
   def get_vector_store(self) -> Chroma | None:
       # Load vector store if not already set
       if Database.vector_store is None and self.embeddings is not None:

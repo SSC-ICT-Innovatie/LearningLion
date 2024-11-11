@@ -1,11 +1,14 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, make_response, request
 
 from DataFetcher.libraries.data_classes.range_enum import Range
 from DataFetcher.run_local import run_local_datafetcher
-from deployment.run_local import run_local_ingest_stores, run_local_query_stores
+from deployment.run_local import getDocumentBlobFromDatabase, run_local_ingest_stores, run_local_query_stores
 from inference.run_local import infer_run_local
+from flask_cors import CORS, cross_origin
 
 app = Flask(__name__)
+cors = CORS(app) # allow CORS for all domains on all routes.
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 @app.route('/')
 def index():
@@ -21,6 +24,7 @@ def ping():
     return {"pong"}
 
 @app.route('/init', methods=['POST'])
+@cross_origin()
 def init():
     if request.is_json is False:
         return jsonify({"error": "Invalid JSON"})
@@ -35,6 +39,7 @@ def init():
     return True
 
 @app.route('/prompt', methods=['POST'])
+@cross_origin()
 def prompt():
     # Access the JSON data sent in the request body
     data = request.get_json()
@@ -50,5 +55,21 @@ def prompt():
     print(f"AI response: {AIresponse}")
     return jsonify({
         "prompt": data["prompt"],
+        "documents": documents,
         "output": AIresponse
     })
+@app.route('/document', methods=['GET'])
+@cross_origin()
+def document():
+    getParams = request.args
+    print(f"Data: {getParams}")
+    pdf_data = getDocumentBlobFromDatabase(getParams['uuid'])
+    if pdf_data is None:
+        return "Document not found", 404    
+
+    response = make_response(pdf_data)
+    response.headers['Content-Type'] = 'application/pdf'
+    # Set Content-Disposition to inline to display the PDF in the browser
+    response.headers['Content-Disposition'] = 'inline; filename="document.pdf"'
+    
+    return response

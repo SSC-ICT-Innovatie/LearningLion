@@ -2,6 +2,8 @@ import json
 from sqlite3 import Connection
 import traceback
 import zipfile
+import pymupdf
+import pymupdf4llm
 import requests
 import ubiops
 from langchain_chroma import Chroma
@@ -113,25 +115,19 @@ class Ingestion:
                         file_path = os.path.join(sourceDir, filename)
                         with open(file_path, "rb") as pdf_file:
                             uuid = filename.split(".")[0]
-                            reader = PdfReader(pdf_file)
+                            reader = pymupdf.Document(pdf_file)
                             # Move the pointer back to the start of the file
                             pdf_file.seek(0)
-                            
                             # Read the raw bytes of the PDF document
                             blobData = pdf_file.read()
                             pdf_file.seek(0)
-                            
                             metadata_text = reader.metadata
-                            print(f"metadata: {metadata_text.get('/Subject')}" )
+                            print(f"metadata: {metadata_text.get('subject')}" )
                             pages = []
                             full_text = ""
-                            doc_subject = metadata_text.get('/Subject') or "unknown"
-                            doc_producer = metadata_text.get('/Producer') or "unknown"
-                            for i, p in enumerate(reader.pages):
-                                extracted_text = p.extract_text().strip()
-                                if extracted_text:
-                                    pages.append((i + 1, extracted_text))
-                                    full_text += extracted_text
+                            doc_subject = metadata_text.get('subject') or "unknown"
+                            doc_producer = metadata_text.get('producer') or "unknown"
+                            full_text = pymupdf4llm.to_markdown(reader)
                             if db_connection:
                                 # Check if document already exists
                                 results = db_connection.execute("SELECT * FROM documents WHERE UUID=?", (uuid,)).fetchall()

@@ -49,3 +49,18 @@ def run_local_ingest_stores(range=Range.Tiny):
   print(querier.query("test"))
   print("Main class done")
   print("Done")
+  
+def getDocumentBlobFromDatabase(UUID):
+  embed = Embedding()
+  data = database.Database(embed)
+  db_connection = data.get_database_connection()
+  cursor = db_connection.cursor()
+  cursor.execute("SELECT document FROM documents WHERE UUID = ?", (UUID,))
+  item = cursor.fetchone()
+  cursor.close()
+  data.close_database_connection()
+      # No need to close the connection here; it will be closed automatically
+  if item:
+      return item[0]
+  else:
+      return None  # Or handle the case where the UUID doesn't exist
