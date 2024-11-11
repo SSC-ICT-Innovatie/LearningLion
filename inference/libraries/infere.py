@@ -8,9 +8,13 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 class Infer:
 	generator = None
 	systemPrompt = """Je bent een vriendelijke chatbot genaamd Learning Lion. Je wilt altijd graag vragen beantwoorden en blijft altijd vriendelijk. Alle informatie die jij verteld komt uit de bestanden die zijn bijgevoegd, mochten de bestanden niet bestaan of onvoldoende informatie bevatten dan zeg je 'ik weet het niet' of 'ik kan je niet helpen'."""
-	def __init__(self, modelName):
-		device = 0 if torch.cuda.is_available() else -1
-		self.generator = pipeline("text-generation", model=modelName, device=device)
+	def __init__(self, modelName, exclude_device=False, args=None):
+		args = args or {}
+		if not exclude_device:
+			device = 0 if torch.cuda.is_available() else -1
+			self.generator = pipeline("text-generation", model=modelName, device=device, **args)
+		else:
+			self.generator = pipeline("text-generation", model=modelName, **args)
 		print("Model loaded")
 
 
