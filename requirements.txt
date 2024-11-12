@@ -19,6 +19,7 @@ click==7.1.2
 colorama==0.4.3
 coloredlogs==15.0.1
 configparser==4.0.2
+coverage==7.6.4
 dataclasses-json==0.6.7
 Deprecated==1.2.14
 durationpy==0.9
@@ -102,6 +103,7 @@ requests-oauthlib==2.0.0
 requests-toolbelt==1.0.0
 rich==13.9.2
 rsa==4.9
+ruff==0.7.3
 safetensors==0.4.5
 schema==0.7.7
 scikit-learn==1.5.2
