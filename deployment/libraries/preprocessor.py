@@ -205,4 +205,20 @@ class Preprocessor:
 	def normalize_whitespace(self, text):
 			# Replace multiple spaces with a single space
 			return re.sub(r'\s+', ' ', text).strip()
+	
+	def get_heading(self,text):
+		result = re.search(r'^(.*?)(?=Vraag 1)', text, re.DOTALL)
 
+		heading = result.group(1).replace("#", "").replace("*", "").strip()
+		cleaned_heading = re.sub(r'^\s*\d+\s*$', '', heading, flags=re.MULTILINE).strip()
+		return cleaned_heading
+	def get_footnotes(self,text):
+		footnote_pattern = r'(?m)^\d+\s+.*'
+		footnotes = re.findall(footnote_pattern, text)
+		firstFootNoteNumber = 1
+		actual_footnotes = []
+		for footnote in footnotes:
+			if footnote.startswith(f"{firstFootNoteNumber} ") and not footnote[len(f"{firstFootNoteNumber} "):].startswith("\n"):
+					actual_footnotes.append(footnote)
+					firstFootNoteNumber += 1
+		return actual_footnotes
