@@ -3,11 +3,11 @@ from DataFetcher.libraries.data_classes.range_enum import Range
 from querier.libraries import database, query
 from querier.libraries.embedding import Embedding
 
-def run_local_query_stores(prompt):
+def run_local_query_stores(prompt,range=Range.Tiny):
   print("Querying stores")
   embed = Embedding()
   data = database.Database(embed)
-  data.setup_database(range=Range.Tiny)
+  data.setup_database(range=range)
   querier = query.Query()
   querier.setup_querier(data)
   return querier.query(prompt)
