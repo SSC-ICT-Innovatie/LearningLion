@@ -13,7 +13,8 @@ import os
 from pypdf import PdfReader
 from langchain.retrievers import BM25Retriever
 
-from deployment.libraries.ubiops_helper import UbiopsHelper
+from ingester.libraries.preprocessor import Preprocessor
+from ingester.libraries.ubiops_helper import UbiopsHelper
 import sqlite3
 # from preprocessor import Preprocessor
 # from ubiops_helper import UbiopsHelper
@@ -82,9 +83,9 @@ class Ingestion:
     
     def summirize(self, text):
         # TODO: Implement summarization
-        return text
+        return "Summarized text"
 
-    def ingest(self, source_dir=None, vector_store=None, embeddings=None, bm25: BM25Retriever|None =None, db_connection:Connection|None =None):
+    def ingest(self, source_dir=None, vector_store=None, embeddings=None, db_connection:Connection|None =None):
         vector_store = vector_store
         text_splitter = self.getTextSplitter()
         embeddings = embeddings
@@ -128,6 +129,14 @@ class Ingestion:
                             doc_subject = metadata_text.get('subject') or "unknown"
                             doc_producer = metadata_text.get('producer') or "unknown"
                             full_text = pymupdf4llm.to_markdown(reader)
+                            
+                            pre = Preprocessor()
+                            clean_full_text = pre.clean_text_MD(full_text)
+                            
+                            heading = pre.get_heading(clean_full_text)
+                            qa_list = pre.get_question_and_answer(clean_full_text)
+                            
+                            
                             if db_connection:
                                 # Check if document already exists
                                 results = db_connection.execute("SELECT * FROM documents WHERE UUID=?", (uuid,)).fetchall()
@@ -136,26 +145,40 @@ class Ingestion:
                                 else:
                                     # Insert document
                                     db_connection.execute("INSERT INTO documents (UUID, filename, subject, producer, content, summirized, document_type, document) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", 
-                                                      (uuid, filename, doc_subject, doc_producer, full_text, self.summirize(full_text), "pdf", blobData))
+                                                      (uuid, filename, doc_subject, doc_producer, clean_full_text, self.summirize(clean_full_text), "pdf", blobData))
                                     db_connection.commit()
                                     print("Written to database")
 
-                            cleaned_pages = []
-                            for page_num, text in pages:
-                                split_pages = text_splitter.split_text(text)
-                                chunkNumber = 0
-                                for split_page in split_pages:
-                                    doc = Document(page_content=split_page, 
-                                                   metadata={"page_number": page_num,
-                                                             "UUID": uuid, 
-                                                             "filename": filename,
-                                                             "subject":doc_subject,
-                                                             "total_pages": len(pages),
-                                                             "producer": doc_producer}, 
-                                                   id=f"{uuid}_{page_num}_{chunkNumber}")
-                                    documents.append(doc)
-                                    chunkNumber += 1
-                        print(f"Processed {items} files out of {totalFiles_in_dir}")
+                            print("Processing pages")
+                            print(f"Total pages: {len(pages)}")
+
+                            questions = qa_list[0]
+                            answers = qa_list[1]
+
+                            if len(questions) == len(answers):
+                                for i in range(len(questions)):
+                                    question = questions[i]
+                                    answer = answers[i]
+                                    
+                                    text = f"{heading}\nQuestion {i+1}: {question}\nAnswer {i+1}: {answer}"
+                                
+                                    split_pages = text_splitter.split_text(text)
+                                    chunkNumber = 0
+                                    for split_page in split_pages:
+                                        doc = Document(page_content=split_page, 
+                                                        metadata={"UUID": uuid, 
+                                                                    "filename": filename,
+                                                                    "subject":doc_subject,
+                                                                    "total_pages": len(pages),
+                                                                    "producer": doc_producer}, 
+                                                        id=f"{uuid}_Q{i}_A{i}_{chunkNumber}")
+                                        print(f"Adding document {doc.id} to vector store")
+                                        print(doc)
+                                        documents.append(doc)
+                                        chunkNumber += 1
+                                print(f"Processed {items} files out of {totalFiles_in_dir}")
+                            else:
+                                print("The number of questions and answers do not match.")
                 except Exception as e:
                     print(f"Error while processing file: {filename}")
                     print(f"Error: {e}")
@@ -183,6 +206,7 @@ class Ingestion:
                 print(f"Batch {batch_count} content: {doc_batch}")
 
         print("Setting up BM25 retriever")
+        print(f"Total documents: {len(documents)}")
         bm25 = BM25Retriever.from_documents(documents)
 
         print("done")

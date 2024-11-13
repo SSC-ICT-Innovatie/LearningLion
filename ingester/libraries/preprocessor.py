@@ -1,3 +1,4 @@
+import os
 import re
 
 class Preprocessor:
@@ -222,3 +223,33 @@ class Preprocessor:
 					actual_footnotes.append(footnote)
 					firstFootNoteNumber += 1
 		return actual_footnotes
+	def clean_text_MD(self, text):
+		# Remove metadata
+		text = re.sub(r'^\s*\d+\s*$', '', text, flags=re.MULTILINE)
+		# Remove empty lines
+		text = re.sub(r'\n\s*\n', '\n', text)
+		# Remove leading and trailing whitespace
+		text = text.strip()
+		# remove makrdown
+		text = re.sub(r'\[.*?\]\(.*?\)', '', text)
+		# remove page seperators
+		text = re.sub(r'--', '', text)
+		# remove headings
+		text = re.sub(r'^#+\s*', '', text)
+		# remove list items
+		text = re.sub(r'^\s*-\s*', '', text)
+		# remove bold
+		text = re.sub(r'\*\*', '', text)
+		# remove italic
+		text = re.sub(r'\*', '', text)
+		# remove links
+		text = re.sub(r'\[.*?\]\(.*?\)', '', text)
+		# Remove multiple spaces
+		text = re.sub(r'\s+', ' ', text)
+		# Remove leading and trailing whitespace
+		text = text.strip()
+		# Remove leading and trailing newlines
+		text = text.strip('\n')
+  
+		return text
+   

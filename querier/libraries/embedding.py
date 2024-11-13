@@ -3,8 +3,8 @@ import torch
 
 class Embedding:
   embeddings = None
-  def __init__(self):
-      self.setup_embeddings()
+  def __init__(self, modelname="textgain/allnli-GroNLP-bert-base-dutch-cased"):
+      self.setup_embeddings(modelname=modelname)
       print("Embedding class initialized")
 
   def get_embeddings(self):
@@ -12,11 +12,11 @@ class Embedding:
        return self.setup_embeddings()
     return self.embeddings
     
-  def setup_embeddings(self):
+  def setup_embeddings(self, modelname="textgain/allnli-GroNLP-bert-base-dutch-cased"):
     print("Setting up embeddings")
     model_kwargs = {'device': 'cpu'}
     encode_kwargs = {'normalize_embeddings': False}
-    model_name = "textgain/allnli-GroNLP-bert-base-dutch-cased"
+    model_name = modelname
     if torch.backends.mps.is_available():
         model_kwargs = {'device': 'mps'}
     elif torch.cuda.is_available():

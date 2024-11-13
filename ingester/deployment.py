@@ -1,7 +1,7 @@
-# import database
-# import embedding
-# import ingestion
-# import query
+import database
+import embedding
+import ingestion
+import query
 
 from langchain_core.documents import Document
 import os
@@ -33,17 +33,6 @@ class Deployment:
           "error": str(e)
       }
       
-  def query_stores(self, prompt):
-    print("Querying stores")
-    embed = embedding.Embedding()
-    ingest = ingestion.Ingestion()
-    data = database.Database(embed)
-    data.download_vector_store()
-    data.download_bm25_retriever()
-    querier = query.Query()
-    querier.setup_querier(data)
-    return querier.query(prompt)
-  
   def run(self, source_dir):
     try:
       print("Running Main class")

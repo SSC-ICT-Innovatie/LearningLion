@@ -1,6 +1,6 @@
 import unittest
 
-from deployment.libraries.preprocessor import Preprocessor
+from ingester.libraries.preprocessor import Preprocessor
 
 class IngesterTest(unittest.TestCase):
 

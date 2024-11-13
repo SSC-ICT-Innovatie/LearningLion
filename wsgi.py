@@ -2,7 +2,8 @@ from flask import Flask, jsonify, make_response, request
 
 from DataFetcher.libraries.data_classes.range_enum import Range
 from DataFetcher.run_local import run_local_datafetcher
-from deployment.run_local import getDocumentBlobFromDatabase, run_local_ingest_stores, run_local_query_stores
+from querier.run_local import getDocumentBlobFromDatabase, run_local_query_stores
+from ingester.run_local import run_local_ingest_stores
 from inference.run_local import infer_run_local
 from flask_cors import CORS, cross_origin
 
