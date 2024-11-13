@@ -130,31 +130,32 @@ class Preprocessor:
 							footer.append(split)
 			return ""
 
+	def get_question_number(self,text):
+		vraagnumber_pattern = r"Vraag (\d+(?:[ ,]en[ ,]\d+)*)" #TODO: add support for comma seperated numbers
+		vraagnumbers = re.findall(vraagnumber_pattern, text)
+		return vraagnumbers
 
 
 	def get_question_and_answer(self, text):
-					footnotes = self.extract_footnotes(text)
-					footer = self.get_footer(text)
-					pages = self.get_amount_of_pages(text,footer)
-					text = self.remove_footer_and_pagenumbers(text,footer,pages)
-					docspecs = self.get_doc_specs(text)
-					text = text.replace(docspecs, "")
-					text = self.normalize_whitespace(text)
-					question_pattern = r"(Vraag\s\d+.*?)(?=\s*Antwoord)"
-					answer_pattern = r"(Antwoord\s\d+.*?)(?=Vraag|\Z)"
+					# footer = self.get_footer(text)
+					# pages = self.get_amount_of_pages(text,footer)
+					# text = self.remove_footer_and_pagenumbers(text,footer,pages)
+					# docspecs = self.get_doc_specs(text)
+					# text = text.replace(docspecs, "")
+					# text = self.normalize_whitespace(text)
+					# question_pattern = r"(Vraag\s\d+.*?)(?=\s*Antwoord)"
+					# answer_pattern = r"(Antwoord\s\d+.*?)(?=Vraag|\Z)"
+					question_pattern = r'(?<=\n\n)Vraag(?:en)?\s+\d+(?:\s+en\s+\d+)*[^\n]*(?:\n(?!\n).*)*' #regex patterns for matching
+					answer_pattern = r'(?<=\n\n)Antwoord(?:en)?\s+\d+(?:\s+en\s+\d+)*[^\n]*(?:\n(?!\n).*)*'
 
-					questions = re.findall(question_pattern, text, re.DOTALL)
-					answers = re.findall(answer_pattern, text, re.DOTALL)
+					questions = re.findall(question_pattern, text)
+					answers = re.findall(answer_pattern, text)
 
 					questions = [q.strip() for q in questions]
 					answers = [a.strip() for a in answers]
 
-					# Remove footnotes from returns
-					questions = [self.remove_footnotes(q, footnotes) for q in questions]
-					answers = [self.remove_footnotes(a, footnotes) for a in answers]
-
-					questions = [self.normalize_whitespace(q) for q in questions]
-					answers = [self.normalize_whitespace(a) for a in answers]
+					# questions = [self.normalize_whitespace(q) for q in questions]
+					# answers = [self.normalize_whitespace(a) for a in answers]
 
 					return [questions, answers]
         

@@ -123,19 +123,16 @@ class Ingestion:
                             blobData = pdf_file.read()
                             pdf_file.seek(0)
                             metadata_text = reader.metadata
-                            print(f"metadata: {metadata_text.get('subject')}" )
                             pages = []
                             full_text = ""
                             doc_subject = metadata_text.get('subject') or "unknown"
                             doc_producer = metadata_text.get('producer') or "unknown"
-                            full_text = pymupdf4llm.to_markdown(reader)
-                            
+                            full_text = pymupdf4llm.to_markdown(reader, margins=(0,0,0,0))
                             pre = Preprocessor()
-                            clean_full_text = pre.clean_text_MD(full_text)
+                            # clean_full_text = pre.clean_text_MD(full_text)
                             
-                            heading = pre.get_heading(clean_full_text)
-                            qa_list = pre.get_question_and_answer(clean_full_text)
-                            
+                            # heading = pre.get_heading(full_text)
+                            qa_list = pre.get_question_and_answer(full_text)
                             
                             if db_connection:
                                 # Check if document already exists
@@ -145,40 +142,32 @@ class Ingestion:
                                 else:
                                     # Insert document
                                     db_connection.execute("INSERT INTO documents (UUID, filename, subject, producer, content, summirized, document_type, document) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", 
-                                                      (uuid, filename, doc_subject, doc_producer, clean_full_text, self.summirize(clean_full_text), "pdf", blobData))
+                                                      (uuid, filename, doc_subject, doc_producer, full_text, self.summirize(full_text), "pdf", blobData))
                                     db_connection.commit()
                                     print("Written to database")
-
-                            print("Processing pages")
-                            print(f"Total pages: {len(pages)}")
-
                             questions = qa_list[0]
                             answers = qa_list[1]
-
-                            if len(questions) == len(answers):
-                                for i in range(len(questions)):
-                                    question = questions[i]
-                                    answer = answers[i]
-                                    
-                                    text = f"{heading}\nQuestion {i+1}: {question}\nAnswer {i+1}: {answer}"
+                            for i in range(len(questions)):
+                                question = questions[i]
+                                answer = answers[i]
+                                question = pre.clean_text_MD(question)
+                                answer = pre.clean_text_MD(answer)
                                 
-                                    split_pages = text_splitter.split_text(text)
-                                    chunkNumber = 0
-                                    for split_page in split_pages:
-                                        doc = Document(page_content=split_page, 
-                                                        metadata={"UUID": uuid, 
-                                                                    "filename": filename,
-                                                                    "subject":doc_subject,
-                                                                    "total_pages": len(pages),
-                                                                    "producer": doc_producer}, 
-                                                        id=f"{uuid}_Q{i}_A{i}_{chunkNumber}")
-                                        print(f"Adding document {doc.id} to vector store")
-                                        print(doc)
-                                        documents.append(doc)
-                                        chunkNumber += 1
-                                print(f"Processed {items} files out of {totalFiles_in_dir}")
-                            else:
-                                print("The number of questions and answers do not match.")
+                                text = f"{question}"
+                                # text = f"{heading}\nQuestion {i+1}: {question}"
+                                questionNumbers = pre.get_question_number(text)
+                                # split_pages = text_splitter.split_text(text)
+                                doc = Document(page_content=text, 
+                                                metadata={"UUID": uuid, 
+                                                            "filename": filename,
+                                                            "subject":doc_subject,
+                                                            "total_pages": len(pages),
+                                                            "producer": doc_producer,
+                                                            "question_number": f"{questionNumbers}"},
+                                                id=f"{uuid}_Q{i}")
+                                print(f"Adding document {doc.id} to vector store")
+                                documents.append(doc)
+                            print(f"Processed {items} files out of {totalFiles_in_dir}")
                 except Exception as e:
                     print(f"Error while processing file: {filename}")
                     print(f"Error: {e}")

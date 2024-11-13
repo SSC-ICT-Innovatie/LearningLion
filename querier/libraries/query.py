@@ -24,7 +24,7 @@ class Query:
         # Create the ensemble retriever
         self.ensemble_retriever = EnsembleRetriever(
             retrievers=[bm25_retriever, chroma_retriever],
-            weights=[0.5, 0.5], # TODO: tune these weights
+            weights=[0.0, 1.0], # TODO: tune these weights
         )
 
         print("Ensemble retriever set up")
