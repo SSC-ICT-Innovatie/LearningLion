@@ -6,8 +6,8 @@ from langchain.retrievers import BM25Retriever
 
 # from embedding import Embedding
 from DataFetcher.libraries.data_classes.range_enum import Range
-from deployment.libraries.embedding import Embedding
-from deployment.libraries.ubiops_helper import UbiopsHelper
+from ingester.libraries.embedding import Embedding
+from ingester.libraries.ubiops_helper import UbiopsHelper
 # from ubiops_helper import UbiopsHelper
 
 class Database:
@@ -30,9 +30,6 @@ class Database:
             return (f"NewPipeChroma_{range.name}", f"vectordb_{range.name}")
   
   def setup_database(self,range=Range.Tiny):
-      # Set up Chroma vector store
-      if not os.path.exists(self.vectordb_folder):
-          os.mkdir(self.vectordb_folder)
       if range is not None:
             print(f"Setting up database with range {range}")
             names = self.getNameBasedOnRange(range)
@@ -116,8 +113,9 @@ class Database:
       self.save_bm25_retriever()
 
   def get_bm25_retriever(self) -> BM25Retriever | None:
-      if Database.bm25Retriever is None:
-          self.load_bm25_retriever()
+      if(Database.bm25Retriever is None):
+          print("BM25 retriever is not set")
+          raise ValueError("BM25 retriever is not set")
       return Database.bm25Retriever
 
   def save_bm25_retriever(self, filename="bm25_retriever.pkl"):
@@ -129,14 +127,14 @@ class Database:
       print(f"BM25 retriever saved to {filename}")
       return True
 
-  def load_bm25_retriever(self, filename="bm25_retriever.pkl"):
-      if not os.path.exists(filename):
-          print(f"No file found at {filename} to load BM25 retriever.")
-          return False
-      with open(filename, 'rb') as file:
-          Database.bm25Retriever = pickle.load(file)
-      print(f"BM25 retriever loaded from {filename}")
-      return True
+#   def load_bm25_retriever(self, filename="bm25_retriever.pkl"):
+#       if not os.path.exists(filename):
+#           print(f"No file found at {filename} to load BM25 retriever.")
+#           return False
+#       with open(filename, 'rb') as file:
+#           Database.bm25Retriever = pickle.load(file)
+#       print(f"BM25 retriever loaded from {filename}")
+#       return True
 
   def upload_vector_store(self):
       if Database.vector_store is None:
@@ -150,11 +148,11 @@ class Database:
       print(f"Vector store uploaded successfully from {self.vectordb_folder}")
       return True
 
-  def download_vector_store(self):
-        # Download the vector store files
-        UbiopsHelper.download_folder(project_name='learning-lion', bucket_name='default', folder_path=self.vectordb_folder, output_folder=self.vectordb_folder)
-        print(f"Vector store downloaded successfully to {self.vectordb_folder}")
-        return True
+#   def download_vector_store(self):
+#         # Download the vector store files
+#         UbiopsHelper.download_folder(project_name='learning-lion', bucket_name='default', folder_path=self.vectordb_folder, output_folder=self.vectordb_folder)
+#         print(f"Vector store downloaded successfully to {self.vectordb_folder}")
+#         return True
     
   def upload_bm25_retriever(self, filename="bm25_retriever.pkl"):
       # Ensure BM25 retriever is saved first
@@ -166,10 +164,10 @@ class Database:
       print(f"BM25 retriever uploaded successfully from {filename}")
       return True
   
-  def download_bm25_retriever(self, filename="bm25_retriever.pkl"):
-        # Download the BM25 retriever file
-        UbiopsHelper.downloadfile(filename, project_name='learning-lion', bucket_name='default')
-        # Load the BM25 retriever from the downloaded file
-        self.load_bm25_retriever(filename)
-        print(f"BM25 retriever downloaded successfully to {filename}")
-        return True
+#   def download_bm25_retriever(self, filename="bm25_retriever.pkl"):
+#         # Download the BM25 retriever file
+#         UbiopsHelper.downloadfile(filename, project_name='learning-lion', bucket_name='default')
+#         # Load the BM25 retriever from the downloaded file
+#         self.load_bm25_retriever(filename)
+#         print(f"BM25 retriever downloaded successfully to {filename}")
+#         return True
