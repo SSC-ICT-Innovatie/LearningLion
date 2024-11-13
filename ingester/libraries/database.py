@@ -51,6 +51,7 @@ class Database:
             print("No database connection set")
             return
         cursor = Database.con.cursor()
+        # Create the documents table
         cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS documents (
@@ -62,7 +63,34 @@ class Database:
                 summirized TEXT,
                 document_type TEXT,
                 document BLOB
-            )
+            );
+            """
+        )
+
+        # Create the questions table
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS questions (
+                UUID TEXT,
+                QUESTIONNUMBER TEXT,
+                question TEXT,
+                answer TEXT,
+                PRIMARY KEY(UUID, QUESTIONNUMBER),
+                FOREIGN KEY(UUID) REFERENCES documents(UUID)
+            );
+            """
+        )
+
+        # Create the footnotes table
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS footnotes (
+                UUID TEXT,
+                footnote_number TEXT,
+                footnote TEXT,
+                PRIMARY KEY(UUID, footnote_number),
+                FOREIGN KEY(UUID) REFERENCES documents(UUID)
+            );
             """
         )
         Database.con.commit()

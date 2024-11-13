@@ -63,14 +63,43 @@ def prompt():
 @cross_origin()
 def document():
     getParams = request.args
-    print(f"Data: {getParams}")
-    pdf_data = getDocumentBlobFromDatabase(getParams['uuid'])
+    uuid = getParams.get('uuid')  # Fetch UUID safely
+    if not uuid:
+        return "UUID parameter is missing", 400  # Bad request if UUID is missing
+    pdf_data = getDocumentBlobFromDatabase(uuid)
     if pdf_data is None:
-        return "Document not found", 404    
+        return "Document not found", 404  # Not found if UUID does not exist
 
     response = make_response(pdf_data)
     response.headers['Content-Type'] = 'application/pdf'
-    # Set Content-Disposition to inline to display the PDF in the browser
     response.headers['Content-Disposition'] = 'inline; filename="document.pdf"'
     
     return response
+
+@app.route('/query', methods=['POST'])
+@cross_origin()
+def query():
+    data = request.get_json()
+    if data is None:
+        return jsonify({"error": "No data provided"})
+    if "query" not in data:
+        return jsonify({"error": "No query provided"})
+    documents = run_local_query_stores(data["query"])
+    return jsonify({
+        "query": data["query"],
+        "documents": documents
+    })
+    
+@app.route('/llm', methods=['POST'])
+@cross_origin()
+def infer():
+    data = request.get_json()
+    if data is None:
+        return jsonify({"error": "No data provided"})
+    if "prompt" not in data:
+        return jsonify({"error": "No prompt provided"})
+    AIresponse = infer_run_local(data["prompt"], files=data["files"])
+    return jsonify({
+        "prompt": data["prompt"],
+        "output": AIresponse
+    })

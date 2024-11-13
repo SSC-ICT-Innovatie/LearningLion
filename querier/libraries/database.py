@@ -47,24 +47,22 @@ class Database:
           persist_directory=self.vectordb_folder,
           collection_metadata={"hnsw:space": "cosine"}
       )        
-  def get_database_connection(self, range=Range.Tiny) -> sqlite3.Connection:
+  def get_database_connection(self, range: Range = Range.Tiny) -> sqlite3.Connection:
         if Database.con is None:
-            print("No database connection set")
-            if self.vectordb_name is not None:
-                names = self.getNameBasedOnRange()
-                Database.con = sqlite3.connect(f"{names[0]}.db", detect_types=sqlite3.PARSE_DECLTYPES)
-                print(f"Database connection set to {self.vectordb_name}")
+            names = self.getNameBasedOnRange(range)
+            Database.con = sqlite3.connect(f"{names[0]}.db", detect_types=sqlite3.PARSE_DECLTYPES, check_same_thread=False)
+            print(f"Database connection set to {names[0]}")
         else:
             print("Database connection already set")
         return Database.con
+
   def close_database_connection(self):
-        if Database.con is not None:
+        if Database.con:
             Database.con.close()
             Database.con = None
             print("Database connection closed")
         else:
             print("No database connection to close")
-    
   def get_vector_store(self) -> Chroma | None:
       # Load vector store if not already set
       if Database.vector_store is None and self.embeddings is not None:

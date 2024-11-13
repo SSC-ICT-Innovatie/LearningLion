@@ -15,7 +15,7 @@ class Query:
         chroma_vectorstore = database.get_vector_store()
         if chroma_vectorstore is None:
             raise ValueError("Chroma vector store is not set in the database")
-        chroma_retriever = chroma_vectorstore.as_retriever(search_type="similarity_score_threshold", search_kwargs={"k": 5,"score_threshold": 0.9})
+        chroma_retriever = chroma_vectorstore.as_retriever(search_type="similarity_score_threshold", search_kwargs={"k": 5,"score_threshold": 0.2})
         # Retrieve the BM25 retriever
         bm25_retriever = database.get_bm25_retriever()
         if bm25_retriever is None:
@@ -24,7 +24,7 @@ class Query:
         # Create the ensemble retriever
         self.ensemble_retriever = EnsembleRetriever(
             retrievers=[bm25_retriever, chroma_retriever],
-            weights=[0.0, 1.0], # TODO: tune these weights
+            weights=[0.0, 1.0], # TODO: tune these weights,
         )
 
         print("Ensemble retriever set up")

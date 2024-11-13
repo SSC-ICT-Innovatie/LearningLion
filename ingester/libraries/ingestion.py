@@ -196,6 +196,8 @@ class Ingestion:
 
         print("Setting up BM25 retriever")
         print(f"Total documents: {len(documents)}")
+        for doc in documents:
+            doc.metadata['retriever'] = "bm25"
         bm25 = BM25Retriever.from_documents(documents)
 
         print("done")
