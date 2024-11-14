@@ -6,7 +6,7 @@ def run_local_ingest_stores(range=Range.Tiny):
   print("Running Main class")
   # Initialize components
   embed = Embedding()
-  data = database.Database(embed)
+  data = database.Database(embed, range=range)
   ingest = ingestion.Ingestion()
   print("Classes initialized")
 
@@ -19,11 +19,9 @@ def run_local_ingest_stores(range=Range.Tiny):
   # Perform ingestion and retrieve BM25 retriever
   print("Perform ingestion")
   vector_store = data.get_vector_store()
-  db_connection = data.get_database_connection()
   embeddings = embed.get_embeddings()
   (_, bm25) = ingest.ingest(source_dir='./tmp', vector_store=vector_store, embeddings=embeddings, database=data)
   print("Ingested")
-  data.close_database_connection()
   # Set and save BM25 retriever to ensure it's stored
   print("Set and save BM25")
   data.set_bm25_retriever(bm25)

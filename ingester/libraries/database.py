@@ -28,13 +28,14 @@ class Database:
         print("Database class initialized")
 
   def getNameBasedOnRange(self, range=Range.Tiny):
-        if range is not None:
+        if self.range is not None:
             return (f"NewPipeChroma_{range.name}", f"vectordb_{range.name}")
   
   def setup_database(self,range=Range.Tiny):
       if range is not None:
             print(f"Setting up database with range {range}")
             names = self.getNameBasedOnRange(range)
+            print(f"Database names: {names}")
             self.apply_database_schema()
             self.vectordb_name = names[0]
             self.vectordb_folder = names[1]
@@ -142,11 +143,12 @@ class Database:
             print(f"No question found with UUID {uuid} and question number {questionNumber}")
             return None
       
-  def get_database_connection(self, range=Range.Tiny) -> sqlite3.Connection:
+  def get_database_connection(self) -> sqlite3.Connection:
         con = None
         print("No database connection set")
         if self.vectordb_name is not None:
-            names = self.getNameBasedOnRange()
+            names = self.getNameBasedOnRange(self.range)
+            print(f"Connecting to database {names[0]}")
             con = sqlite3.connect(f"{names[0]}.db", detect_types=sqlite3.PARSE_DECLTYPES)
             print(f"Database connection set to {self.vectordb_name}")
         else:
