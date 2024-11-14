@@ -13,6 +13,7 @@ import os
 from pypdf import PdfReader
 from langchain.retrievers import BM25Retriever
 
+from ingester.libraries.database import Database
 from ingester.libraries.preprocessor import Preprocessor
 from ingester.libraries.ubiops_helper import UbiopsHelper
 import sqlite3
@@ -85,7 +86,7 @@ class Ingestion:
         # TODO: Implement summarization
         return "Summarized text"
 
-    def ingest(self, source_dir=None, vector_store=None, embeddings=None, db_connection:Connection|None =None):
+    def ingest(self, source_dir=None, vector_store=None, embeddings=None, database:Database|None =None):
         vector_store = vector_store
         text_splitter = self.getTextSplitter()
         embeddings = embeddings
@@ -134,17 +135,19 @@ class Ingestion:
                             # heading = pre.get_heading(full_text)
                             qa_list = pre.get_question_and_answer(full_text)
                             
-                            if db_connection:
-                                # Check if document already exists
-                                results = db_connection.execute("SELECT * FROM documents WHERE UUID=?", (uuid,)).fetchall()
-                                if len(results) > 0:
-                                    print(f"Document with UUID {uuid} already exists in database")
-                                else:
-                                    # Insert document
-                                    db_connection.execute("INSERT INTO documents (UUID, filename, subject, producer, content, summirized, document_type, document) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", 
-                                                      (uuid, filename, doc_subject, doc_producer, full_text, self.summirize(full_text), "pdf", blobData))
-                                    db_connection.commit()
-                                    print("Written to database")
+                            # ##
+                            database.insertDocument(
+                                uuid=uuid,
+                                filename=filename,
+                                doc_subject=doc_subject,
+                                doc_producer=doc_producer,
+                                full_text=full_text,
+                                blobData=blobData,
+                                summirized=self.summirize(full_text),
+                                questions=qa_list[0],
+                                answers=qa_list[1],
+                                footnotes=pre.get_footnotes(full_text)
+                            )
                             questions = qa_list[0]
                             answers = qa_list[1]
                             for i in range(len(questions)):
@@ -155,7 +158,7 @@ class Ingestion:
                                 
                                 text = f"{question}"
                                 # text = f"{heading}\nQuestion {i+1}: {question}"
-                                questionNumbers = pre.get_question_number(text)
+                                questionNumbers = pre.get_question_number(text)[0]
                                 # split_pages = text_splitter.split_text(text)
                                 doc = Document(page_content=text, 
                                                 metadata={"UUID": uuid, 

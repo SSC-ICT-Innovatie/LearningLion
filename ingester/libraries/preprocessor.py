@@ -134,6 +134,10 @@ class Preprocessor:
 		vraagnumber_pattern = r"Vraag (\d+(?:[ ,]en[ ,]\d+)*)" #TODO: add support for comma seperated numbers
 		vraagnumbers = re.findall(vraagnumber_pattern, text)
 		return vraagnumbers
+	def get_footnote_number(self,text):
+		footnotenumber_pattern = r"(\d+)"
+		footnotenumbers = re.findall(footnotenumber_pattern, text)
+		return footnotenumbers[0]
 
 
 	def get_question_and_answer(self, text):

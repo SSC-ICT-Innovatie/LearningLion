@@ -7,6 +7,7 @@ from langchain.retrievers import BM25Retriever
 # from embedding import Embedding
 from DataFetcher.libraries.data_classes.range_enum import Range
 from ingester.libraries.embedding import Embedding
+from ingester.libraries.preprocessor import Preprocessor
 from ingester.libraries.ubiops_helper import UbiopsHelper
 # from ubiops_helper import UbiopsHelper
 
@@ -16,13 +17,14 @@ class Database:
   vectordb_folder = "vectordb"
   vectordb_name = "NewPipeChroma"
   embeddings = None
-  con = None
+  range = Range.Tiny
   
-  def __init__(self, embed:Embedding):
+  def __init__(self, embed:Embedding, range=Range.Tiny):
         if embed is not None:
             self.embeddings = embed
         else:
             print("No embeddings provided to Database class")
+        self.range = range
         print("Database class initialized")
 
   def getNameBasedOnRange(self, range=Range.Tiny):
@@ -33,7 +35,6 @@ class Database:
       if range is not None:
             print(f"Setting up database with range {range}")
             names = self.getNameBasedOnRange(range)
-            Database.con = sqlite3.connect(f"{names[0]}.db", detect_types=sqlite3.PARSE_DECLTYPES)
             self.apply_database_schema()
             self.vectordb_name = names[0]
             self.vectordb_folder = names[1]
@@ -47,10 +48,8 @@ class Database:
       )
   def apply_database_schema(self):
         # Apply schema to database
-        if Database.con is None:
-            print("No database connection set")
-            return
-        cursor = Database.con.cursor()
+        con = self.get_database_connection()
+        cursor = con.cursor()
         # Create the documents table
         cursor.execute(
             """
@@ -93,26 +92,66 @@ class Database:
             );
             """
         )
-        Database.con.commit()
+        con.commit()
         print("Database schema applied")
-        
+        con.close()
+  def insertDocument(self, uuid, filename, doc_subject, doc_producer, full_text, blobData, summirized, questions, answers, footnotes):
+        con = self.get_database_connection()
+        # Check if document already exists
+        results = con.execute("SELECT * FROM documents WHERE UUID=?", (uuid,)).fetchall()
+        if len(results) > 0:
+            print(f"Document with UUID {uuid} already exists in database")
+        else:
+            pre = Preprocessor()
+            # Insert document
+            con.execute("INSERT INTO documents (UUID, filename, subject, producer, content, summirized, document_type, document) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", 
+                                (uuid, filename, doc_subject, doc_producer, full_text, summirized, "pdf", blobData))
+            for footnote in footnotes:
+                footnoteNumber = pre.get_footnote_number(footnote)
+                con.execute("INSERT INTO footnotes (UUID, footnote_number, footnote) VALUES (?, ?, ?)",
+                                 (uuid, footnoteNumber, footnote))
+            
+            print("Footnotes written to database")
+            print(f"questions: {questions}") 
+            for i in range(len(questions)):
+                question = questions[i]
+                answer = answers[i]
+                questionNumber = pre.get_question_number(question)[0]
+                con.execute("INSERT INTO questions (UUID, QUESTIONNUMBER, question, answer) VALUES (?, ?, ?, ?)",
+                                 (uuid, questionNumber, question, answer))
+            con.commit()
+            print("Written to database")
+            con.close()
+
+  def getDocument(self, uuid):
+        con = self.get_database_connection()
+        document = con.execute("SELECT * FROM documents WHERE UUID=?", (uuid,)).fetchone()
+        con.close()
+        if document is not None:
+            return document
+        else:
+            print(f"No document found with UUID {uuid}")
+            return None
+  def getQuestion(self, uuid, questionNumber):
+        con = self.get_database_connection()
+        question = con.execute("SELECT * FROM questions WHERE UUID=? AND QUESTIONNUMBER=?", (uuid, questionNumber)).fetchone()
+        con.close()
+        if question is not None:
+            return question
+        else:
+            print(f"No question found with UUID {uuid} and question number {questionNumber}")
+            return None
+      
   def get_database_connection(self, range=Range.Tiny) -> sqlite3.Connection:
-        if Database.con is None:
-            print("No database connection set")
-            if self.vectordb_name is not None:
-                names = self.getNameBasedOnRange()
-                Database.con = sqlite3.connect(f"{names[0]}.db", detect_types=sqlite3.PARSE_DECLTYPES)
-                print(f"Database connection set to {self.vectordb_name}")
+        con = None
+        print("No database connection set")
+        if self.vectordb_name is not None:
+            names = self.getNameBasedOnRange()
+            con = sqlite3.connect(f"{names[0]}.db", detect_types=sqlite3.PARSE_DECLTYPES)
+            print(f"Database connection set to {self.vectordb_name}")
         else:
             print("Database connection already set")
-        return Database.con
-  def close_database_connection(self):
-        if Database.con is not None:
-            Database.con.close()
-            Database.con = None
-            print("Database connection closed")
-        else:
-            print("No database connection to close")
+        return con
     
   def get_vector_store(self) -> Chroma | None:
       # Load vector store if not already set

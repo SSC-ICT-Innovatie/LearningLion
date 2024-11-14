@@ -21,7 +21,7 @@ def run_local_ingest_stores(range=Range.Tiny):
   vector_store = data.get_vector_store()
   db_connection = data.get_database_connection()
   embeddings = embed.get_embeddings()
-  (_, bm25) = ingest.ingest(source_dir='./tmp', vector_store=vector_store, embeddings=embeddings, db_connection=db_connection)
+  (_, bm25) = ingest.ingest(source_dir='./tmp', vector_store=vector_store, embeddings=embeddings, database=data)
   print("Ingested")
   data.close_database_connection()
   # Set and save BM25 retriever to ensure it's stored

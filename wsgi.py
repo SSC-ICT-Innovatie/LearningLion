@@ -2,6 +2,8 @@ from flask import Flask, jsonify, make_response, request
 
 from DataFetcher.libraries.data_classes.range_enum import Range
 from DataFetcher.run_local import run_local_datafetcher
+from ingester.libraries.database import Database
+from ingester.libraries.embedding import Embedding
 from querier.run_local import getDocumentBlobFromDatabase, run_local_query_stores
 from ingester.run_local import run_local_ingest_stores
 from inference.run_local import infer_run_local
@@ -98,7 +100,24 @@ def infer():
         return jsonify({"error": "No data provided"})
     if "prompt" not in data:
         return jsonify({"error": "No prompt provided"})
-    AIresponse = infer_run_local(data["prompt"], files=data["files"])
+    files = []
+    if "files" in data:
+        embeddings = Embedding()
+        database = Database(embed=embeddings)
+        files = data['files']
+        fetchedFiles = []
+        print(f"Files: {files}")
+        for file in files:
+            print(f"File: {file}")
+            print(f"uuid {file.get('uuid')}")
+            database.get_database_connection(range=Range.Tiny)
+            # get answer from database
+            fetchedData = database.getQuestion(file.get('uuid'), file.get('question_number'))
+            fetchedFiles.append(fetchedData)
+            
+        print(f"Question and answer: {fetchedFiles}")
+            
+    AIresponse = infer_run_local(data["prompt"], files=fetchedFiles)
     return jsonify({
         "prompt": data["prompt"],
         "output": AIresponse

@@ -169,7 +169,7 @@ class KamerVragen(dataSource):
                 metadata_pdf = {
                     "/Title": f"{response_meta_body['Titel']}",
                     "/Subject": f"{response_meta_body['Onderwerp']}",
-                    "/Producer": f'File downloaded from {url}',
+                    "/Producer": f'{url}',
                     "/Datum": f"{response_meta_body['Datum']}",
                 }
                 # Write metadata to the PDF

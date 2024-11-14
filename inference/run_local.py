@@ -1,5 +1,6 @@
 from inference.libraries.infere import Infer
 
+inference_Global = None
 
 def infer_run_local(prompt,
                     chatlog=None,
@@ -7,8 +8,10 @@ def infer_run_local(prompt,
                     LLM="BramVanroy/fietje-2-chat", 
                     systemPrompt=None, 
                     generation_kwargs=None):
-  inference = Infer(LLM)
-  return inference.predict(prompt, chatlog, files, systemPrompt, generation_kwargs)
+  global inference_Global
+  if inference_Global is None:
+    inference_Global = Infer(LLM)
+  return inference_Global.predict(prompt, chatlog, files, systemPrompt, generation_kwargs)
 
 def infer_factory(LLM="BramVanroy/fietje-2-chat"):
   return Infer(LLM)

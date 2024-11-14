@@ -458,16 +458,38 @@ Arbeidsmarkt Zorg en Welzijn | Rapport | Rijksoverheid.nl.
 	
 	def test_split_sinuglar_qa(self):
 		pre = Preprocessor()
-		doc="""Vraag 1: Wat is de hoofdstad van Nederland? Antwoord 1: Amsterdam"""
-		self.assertEqual(pre.get_question_and_answer(doc), [['Vraag 1: Wat is de hoofdstad van Nederland?'], ['Antwoord 1: Amsterdam']])
+		doc="""\n\nVraag 1
+Wat is de hoofdstad van Nederland? 
+\nAntwoord 1
+Amsterdam"""
+		print(pre.get_question_and_answer(doc))
+		self.assertEqual(pre.get_question_and_answer(doc), [['Vraag 1\nWat is de hoofdstad van Nederland?'], ['Antwoord 1\nAmsterdam']])
 	def test_split_multiple_qa(self):
 		pre = Preprocessor()
-		doc = """Vraag 1: Wat is de hoofdstad van Nederland? Antwoord 1: Amsterdam Vraag 2: Wat is de hoofdstad van België? Antwoord 2: Brussel"""
-		self.assertEqual(pre.get_question_and_answer(doc), [['Vraag 1: Wat is de hoofdstad van Nederland?', 'Vraag 2: Wat is de hoofdstad van België?'], ['Antwoord 1: Amsterdam', 'Antwoord 2: Brussel']])
+		doc = """\n\nVraag 1
+Wat is de hoofdstad van Nederland?
+\nAntwoord 1
+Amsterdam 
+\nVraag 2
+Wat is de hoofdstad van België?
+\nAntwoord 2
+Brussel"""
+		self.assertEqual(pre.get_question_and_answer(doc), [['Vraag 1\nWat is de hoofdstad van Nederland?', 'Vraag 2\nWat is de hoofdstad van België?'], ['Antwoord 1\nAmsterdam', 'Antwoord 2\nBrussel']])
 	def	test_split_page_qa(self):
 		pre = Preprocessor()
-		doc = """Vraag 1: Wat is de hoofdstad van Nederland? Antwoord 1: Amsterdam Vraag 2: Wat is de hoofdstad van België? Antwoord 2: Brussel Vraag 3: Wat is de hoofdstad van Frankrijk? Antwoord 3: Parijs"""
-		self.assertEqual(pre.get_question_and_answer(doc), [['Vraag 1: Wat is de hoofdstad van Nederland?', 'Vraag 2: Wat is de hoofdstad van België?', 'Vraag 3: Wat is de hoofdstad van Frankrijk?'], ['Antwoord 1: Amsterdam', 'Antwoord 2: Brussel', 'Antwoord 3: Parijs']])
+		doc = """\n\nVraag 1
+Wat is de hoofdstad van Nederland? 
+\nAntwoord 1
+Amsterdam
+\nVraag 2
+Wat is de hoofdstad van België?
+\nAntwoord 2
+Brussel
+\nVraag 3
+Wat is de hoofdstad van Frankrijk?
+\nAntwoord 3
+Parijs"""
+		self.assertEqual(pre.get_question_and_answer(doc), [['Vraag 1\nWat is de hoofdstad van Nederland?', 'Vraag 2\nWat is de hoofdstad van België?', 'Vraag 3\nWat is de hoofdstad van Frankrijk?'], ['Antwoord 1\nAmsterdam', 'Antwoord 2\nBrussel', 'Antwoord 3\nParijs']])
 	def test_split_doc_one_qa(self):
 		pre = Preprocessor()
 		doc = self.whole_doc

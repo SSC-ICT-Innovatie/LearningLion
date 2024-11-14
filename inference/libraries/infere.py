@@ -8,6 +8,7 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 class Infer:
 	generator = None
 	systemPrompt = """Je bent een vriendelijke chatbot genaamd Learning Lion. Je wilt altijd graag vragen beantwoorden en blijft altijd vriendelijk. Alle informatie die jij verteld komt uit de bestanden die zijn bijgevoegd, mochten de bestanden niet bestaan of onvoldoende informatie bevatten dan zeg je 'ik weet het niet' of 'ik kan je niet helpen'."""
+	llm = None
 	def __init__(self, modelName, exclude_device=False, args=None):
 		args = args or {}
 		if not exclude_device:
@@ -16,6 +17,7 @@ class Infer:
 		else:
 			self.generator = pipeline("text-generation", model=modelName, **args)
 		print("Model loaded")
+		self.llm = modelName
 
 
 	def parse_chatlog(self, chatlog):
