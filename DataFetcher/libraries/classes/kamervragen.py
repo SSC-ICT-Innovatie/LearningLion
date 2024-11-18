@@ -165,12 +165,11 @@ class KamerVragen(dataSource):
                 for page in reader.pages:
                     pdfwriter.add_page(page)
                 
-
                 metadata_pdf = {
                     "/Title": f"{response_meta_body['Titel']}",
                     "/Subject": f"{response_meta_body['Onderwerp']}",
                     "/Producer": f'{url}',
-                    "/Datum": f"{response_meta_body['Datum']}",
+                    "/CreationDate": f"{response_meta_body['DatumRegistratie']}",
                 }
                 # Write metadata to the PDF
                 pdfwriter.add_metadata(metadata_pdf)

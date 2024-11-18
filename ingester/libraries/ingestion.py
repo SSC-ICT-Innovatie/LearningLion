@@ -17,6 +17,7 @@ from ingester.libraries.database import Database
 from ingester.libraries.preprocessor import Preprocessor
 from ingester.libraries.ubiops_helper import UbiopsHelper
 import sqlite3
+import datetime
 # from preprocessor import Preprocessor
 # from ubiops_helper import UbiopsHelper
 
@@ -128,6 +129,8 @@ class Ingestion:
                             full_text = ""
                             doc_subject = metadata_text.get('subject') or "unknown"
                             doc_producer = metadata_text.get('producer') or "unknown"
+                            print(f"metadata: {metadata_text}")
+                            apiUploadDate = metadata_text.get("creationDate")
                             full_text = pymupdf4llm.to_markdown(reader, margins=(0,0,0,0))
                             pre = Preprocessor()
                             # clean_full_text = pre.clean_text_MD(full_text)
@@ -146,7 +149,8 @@ class Ingestion:
                                 summirized=self.summirize(full_text),
                                 questions=qa_list[0],
                                 answers=qa_list[1],
-                                footnotes=pre.get_footnotes(full_text)
+                                footnotes=pre.get_footnotes(full_text),
+                                apiUploadDate=apiUploadDate
                             )
                             questions = qa_list[0]
                             answers = qa_list[1]

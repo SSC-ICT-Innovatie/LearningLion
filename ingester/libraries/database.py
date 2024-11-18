@@ -62,7 +62,9 @@ class Database:
                 content TEXT,
                 summirized TEXT,
                 document_type TEXT,
-                document BLOB
+                document BLOB,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                api_upload_date TIMESTAMP
             );
             """
         )
@@ -96,7 +98,7 @@ class Database:
         con.commit()
         print("Database schema applied")
         con.close()
-  def insertDocument(self, uuid, filename, doc_subject, doc_producer, full_text, blobData, summirized, questions, answers, footnotes):
+  def insertDocument(self, uuid, filename, doc_subject, doc_producer, full_text, blobData, summirized, questions, answers, footnotes, apiUploadDate):
         con = self.get_database_connection()
         # Check if document already exists
         results = con.execute("SELECT * FROM documents WHERE UUID=?", (uuid,)).fetchall()
@@ -105,8 +107,8 @@ class Database:
         else:
             pre = Preprocessor()
             # Insert document
-            con.execute("INSERT INTO documents (UUID, filename, subject, producer, content, summirized, document_type, document) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", 
-                                (uuid, filename, doc_subject, doc_producer, full_text, summirized, "pdf", blobData))
+            con.execute("INSERT INTO documents (UUID, filename, subject, producer, content, summirized, document_type, document, api_upload_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", 
+                                (uuid, filename, doc_subject, doc_producer, full_text, summirized, "pdf", blobData, apiUploadDate))
             for footnote in footnotes:
                 footnoteNumber = pre.get_footnote_number(footnote)
                 con.execute("INSERT INTO footnotes (UUID, footnote_number, footnote) VALUES (?, ?, ?)",
