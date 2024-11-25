@@ -103,14 +103,14 @@ def infer():
     files = []
     if "files" in data:
         embeddings = Embedding()
-        database = Database(embed=embeddings)
+        database = Database(embed=embeddings, range=Range.Tiny)
         files = data['files']
         fetchedFiles = []
         print(f"Files: {files}")
         for file in files:
             print(f"File: {file}")
             print(f"uuid {file.get('uuid')}")
-            database.get_database_connection(range=Range.Tiny)
+            database.get_database_connection()
             # get answer from database
             fetchedData = database.getQuestion(file.get('uuid'), file.get('question_number'))
             fetchedFiles.append(fetchedData)
