@@ -1,6 +1,0 @@
-# This file can be used to choose the colors of the streamlit interface, for color codes see: https://python-charts.com/colors/
-[theme]
-base="light"
-primaryColor="#144273"
-secondaryBackgroundColor="#FFC20A"
-font="serif"

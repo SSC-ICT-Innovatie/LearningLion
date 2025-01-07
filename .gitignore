@@ -2,7 +2,8 @@
 # We do not want the specific documents we used and saved to be publically uploaded for example. This makes sure the wrong files aren't uploaded.
 # project specific folders
 /dev
-/vector_stores
+vector_stores
+vectordb
 /docs/*/review
 /docs/*/summaries
 /flask_app/instance
@@ -151,7 +152,18 @@ dmypy.json
 .pyre/
 
 # Test Environment
-test.ipynb
+# test.ipynb
 
 # Powershell scripts
 *.ps1
+.DS_Store
+
+docs
+/vectordb
+
+docs
+/tmp
+*.zip
+*.pkl
+/vectordb_Tiny
+*.db
